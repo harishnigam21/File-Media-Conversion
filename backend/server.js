@@ -3,7 +3,7 @@ const app = express();
 const cors = require("cors");
 const corsOptions = require("./config/cors");
 const cookieParser = require("cookie-parser");
-const credentials = require("./middleware/credentials");
+const credentials = require("./middlewares/credentials");
 require("dotenv").config();
 const PORT = process.env.PORT || 8080;
 

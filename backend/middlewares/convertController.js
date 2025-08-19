@@ -43,7 +43,16 @@ export const convertFile = async (req, res) => {
       });
     }
     const fileUrl = exportTask.result.files[0].url;
-    res.json({ message: "File converted successfully!", fileUrl });
+
+    console.log(
+      `File converted successfully from ${inputFormat} to ${outputFormat}`
+    );
+    res
+      .status(200)
+      .json({
+        message: `File converted successfully from ${inputFormat} to ${outputFormat}`,
+        fileUrl,
+      });
     fs.unlink(req.file.path, (err) => {
       if (err) console.log("Failed to remove temp file:", err);
     });

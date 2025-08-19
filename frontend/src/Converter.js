@@ -1,20 +1,19 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 function Converter() {
   const [file, setFile] = useState(null);
   const [inputFormat, setInputFormat] = useState("pdf");
   const [outputFormat, setOutputFormat] = useState("pdf");
-  const [message, setMessage] = useState("");
   const [downloadUrl, setDownloadUrl] = useState("");
-  
+  const messageRef = useRef(null);
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
-    setMessage("");
     setDownloadUrl("");
   };
 
   const handleSubmit = async () => {
     if (!file) {
-      alert("Please select a file first");
+      messageRef.current.style.color = "red";
+      messageRef.current.textContent = "Please Choose file to move forward !";
       return;
     }
 
@@ -24,7 +23,8 @@ function Converter() {
     formData.append("outputFormat", outputFormat);
 
     try {
-      setMessage("Uploading and converting file...");
+      messageRef.current.style.color = "blue";
+      messageRef.current.textContent = "Uploading and converting file...";
       setDownloadUrl("");
 
       const response = await fetch("http://localhost:5000/api/convert", {
@@ -33,75 +33,108 @@ function Converter() {
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed: " + response.statusText);
+        messageRef.current.style.color = "red";
+        messageRef.current.textContent = `Upload failed: " + ${response.statusText}`;
       }
 
       const data = await response.json();
 
-      // ✅ use fileUrl (backend sends this, not downloadUrl)
-      setMessage(data.message || "File converted successfully!");
+      messageRef.current.style.color = "green";
+      messageRef.current.textContent =
+        data.message || "File converted successfully!";
       setDownloadUrl(data.fileUrl || "");
     } catch (error) {
-      setMessage("Error: " + error.message);
+      messageRef.current.style.color = "red";
+      messageRef.current.textContent = `Error : ${error.message}`;
       setDownloadUrl("");
     }
   };
 
   return (
-    <div className="App" style={{ textAlign: "center", marginTop: "50px" }}>
-      <h2>File Converter</h2>
-      <input type="file" onChange={handleFileChange} />
-      <br /> {/* Format selectors */}
-      <div style={{ marginTop: "15px" }}>
-        <label>
-          From:
-          <select
-            value={inputFormat}
-            onChange={(e) => setInputFormat(e.target.value)}
+    <section className="w-screen h-screen flex flex-col justify-center items-center p-4">
+      <article className="flex flex-col gap-4 w-full md:w-1/2 justify-center items-center border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_0.8rem_black_inset] box-border">
+        <h2 className="text-5xl md:text-7xl font-bold text-center">
+          File Converter
+        </h2>
+        <article className="w-full sm:w-1/2 flex flex-wrap sm:flex-nowrap items-center justify-between box-border">
+          <label
+            className="p-4 text-2xl font-bold whitespace-nowrap"
+            for="chooseFile"
           >
-            <option value="pdf">PDF</option> <option value="docx">DOCX</option>
-            <option value="xlsx">XLSX</option> <option value="jpg">JPG</option>
-            <option value="png">PNG</option>
-          </select>
-        </label>
-        <label style={{ marginLeft: "20px" }}>
-          To:
-          <select
-            value={outputFormat}
-            onChange={(e) => setOutputFormat(e.target.value)}
+            File :{" "}
+          </label>
+          <input
+            id="chooseFile"
+            name="chooseFile"
+            type="file"
+            accept={`.${inputFormat}`}
+            onChange={handleFileChange}
+            className="cursor-pointer rounded-md bg-gray-400 border-2 max-w-full border-black p-4 text-white"
+          />
+        </article>
+        <article className="w-full sm:w-1/2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+          <label
+            className="p-4 text-2xl font-bold whitespace-nowrap"
+            for="conversion"
           >
-            <option value="pdf">PDF</option> <option value="docx">DOCX</option>
-            <option value="xlsx">XLSX</option> <option value="jpg">JPG</option>
-            <option value="png">PNG</option>
-          </select>
-        </label>
-      </div>
-      <button
-        onClick={handleSubmit}
-        style={{ marginTop: "15px", padding: "10px 20px", cursor: "pointer" }}
-      >
-        Upload & Convert
-      </button>
-      {message && <p style={{ marginTop: "20px" }}>{message}</p>}
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "inline-block",
-            marginTop: "20px",
-            padding: "10px 20px",
-            backgroundColor: "#28a745",
-            color: "white",
-            textDecoration: "none",
-            borderRadius: "5px",
-          }}
+            Conversion :
+          </label>
+          <article className="flex gap-2 flex-nowrap">
+            <div className="flex flex-nowrap items-center gap-2">
+              <label for="from" className="whitespace-nowrap">
+                From :{" "}
+              </label>
+              <select
+                id="from"
+                name="from"
+                value={inputFormat}
+                onChange={(e) => setInputFormat(e.target.value)}
+                className="bg-gray-400 p-2 rounded-md"
+              >
+                <option value="pdf">PDF</option>{" "}
+                <option value="docx">DOCX</option>
+                <option value="xlsx">XLSX</option>{" "}
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </div>
+            <div className="flex flex-nowrap items-center gap-2">
+              <label for="from" className="whitespace-nowrap">
+                To :{" "}
+              </label>
+              <select
+                value={outputFormat}
+                onChange={(e) => setOutputFormat(e.target.value)}
+                className="bg-gray-400 p-2 rounded-md"
+              >
+                <option value="pdf">PDF</option>{" "}
+                <option value="docx">DOCX</option>
+                <option value="xlsx">XLSX</option>{" "}
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </div>
+          </article>
+        </article>
+        <button
+          onClick={handleSubmit}
+          className="border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_2rem_0.5rem_gray_inset] font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset]"
         >
-          Download Converted File
-        </a>
-      )}
-    </div>
+          Upload & Convert
+        </button>
+        <p ref={messageRef} className="animate-pulse duration-200"></p>
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border-2 p-4 rounded-md border-green-500 shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_blue_inset]"
+          >
+            Download Converted File
+          </a>
+        )}
+      </article>
+    </section>
   );
 }
 export default Converter;
