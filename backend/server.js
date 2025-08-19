@@ -15,6 +15,7 @@ app.use(cookieParser());
 app.use(cors(corsOptions));
 
 //app
+app.use("/api", require("./routes/convertRoutes"));
 
 app.get("/", (req, res) => {
   res.send("Welcome to conversion Backend Server");

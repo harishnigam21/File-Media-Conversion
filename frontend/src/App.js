@@ -1,5 +1,5 @@
+import Converter from "./Converter";
 function App() {
-  return <div>App</div>;
+  return <Converter />;
 }
-
 export default App;
