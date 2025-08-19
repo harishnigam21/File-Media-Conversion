@@ -1,4 +1,3 @@
-import fs from "fs";
 import CloudConvert from "cloudconvert";
 export const convertFile = async (req, res) => {
   const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY);
@@ -28,7 +27,7 @@ export const convertFile = async (req, res) => {
     const importTask = job.tasks.find((t) => t.name === "import-my-file");
     await cloudConvert.tasks.upload(
       importTask,
-      fs.createReadStream(req.file.path),
+      req.file.buffer,
       req.file.originalname
     );
     const completedJob = await cloudConvert.jobs.wait(job.id);
@@ -44,9 +43,6 @@ export const convertFile = async (req, res) => {
     }
     const fileUrl = exportTask.result.files[0].url;
     res.json({ message: "File converted successfully!", fileUrl });
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.log("Failed to remove temp file:", err);
-    });
   } catch (err) {
     console.log("Conversion Error:", err);
     res
