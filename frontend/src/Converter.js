@@ -122,7 +122,7 @@ function Converter() {
         >
           Upload & Convert
         </button>
-        <p ref={messageRef} className="animate-pulse duration-200"></p>
+        <p ref={messageRef} className="animate-pulse duration-200 font-bold"></p>
         {downloadUrl && (
           <a
             href={downloadUrl}

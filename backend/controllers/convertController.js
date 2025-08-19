@@ -1,7 +1,7 @@
 import CloudConvert from "cloudconvert";
 export const convertFile = async (req, res) => {
-  const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY1);
   try {
+    const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY1);
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
     }
@@ -42,7 +42,18 @@ export const convertFile = async (req, res) => {
       });
     }
     const fileUrl = exportTask.result.files[0].url;
-    res.json({ message: "File converted successfully!", fileUrl });
+    if (!fileUrl) {
+      return res
+        .status(403)
+        .json({ message: "Looks like we didn't get link to download" });
+    }
+    console.log(
+      `File converted successfully from ${inputFormat} to ${outputFormat}`
+    );
+    res.status(200).json({
+      message: `File converted successfully from ${inputFormat} to ${outputFormat}`,
+      fileUrl,
+    });
   } catch (err) {
     console.log("Conversion Error:", err);
     res
