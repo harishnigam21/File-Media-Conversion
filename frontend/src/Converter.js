@@ -27,7 +27,7 @@ function Converter() {
       messageRef.current.textContent = "Uploading and converting file...";
       setDownloadUrl("");
 
-      const response = await fetch("http://localhost:5000/api/convert", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_HOST}/api/convert`, {
         method: "POST",
         body: formData,
       });

@@ -1,7 +1,7 @@
 import fs from "fs";
 import CloudConvert from "cloudconvert";
 export const convertFile = async (req, res) => {
-  const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY);
+  const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY1);
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
