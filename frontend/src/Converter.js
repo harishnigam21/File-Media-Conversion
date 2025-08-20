@@ -10,8 +10,9 @@ function Converter() {
     setDownloadUrl("");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
     if (!file) {
+      e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
       messageRef.current.style.color = "red";
       messageRef.current.textContent = "Please Choose file to move forward !";
       return;
@@ -27,23 +28,27 @@ function Converter() {
       messageRef.current.textContent = "Uploading and converting file...";
       setDownloadUrl("");
 
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_HOST}/api/convert`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        messageRef.current.style.color = "red";
-        messageRef.current.textContent = `Upload failed: " + ${response.statusText}`;
-      }
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_HOST}/api/convert`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
 
-      messageRef.current.style.color = "green";
-      messageRef.current.textContent =
-        data.message || "File converted successfully!";
-      setDownloadUrl(data.fileUrl || "");
+      if (response.ok) {
+        messageRef.current.style.color = "green";
+        messageRef.current.textContent = data.message;
+        setDownloadUrl(data.fileUrl || "");
+      } else {
+        e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+        messageRef.current.style.color = "red";
+        messageRef.current.textContent = `Upload failed : ${data.message}`;
+      }
     } catch (error) {
+      e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
       messageRef.current.style.color = "red";
       messageRef.current.textContent = `Error : ${error.message}`;
       setDownloadUrl("");
@@ -52,11 +57,11 @@ function Converter() {
 
   return (
     <section className="w-screen h-screen flex flex-col justify-center items-center p-4">
-      <article className="flex flex-col gap-4 w-full md:w-1/2 justify-center items-center border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_0.8rem_black_inset] box-border">
+      <article className="flex flex-col gap-4 w-full md:w-1/2 justify-center items-center border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_0.8rem_black_inset] box-border wrap">
         <h2 className="text-5xl md:text-7xl font-bold text-center">
           File Converter
         </h2>
-        <article className="w-full sm:w-1/2 flex flex-wrap sm:flex-nowrap items-center justify-between box-border">
+        <article className="w-full flex flex-wrap lg:flex-nowrap items-center justify-center box-border">
           <label
             className="p-4 text-2xl font-bold whitespace-nowrap"
             for="chooseFile"
@@ -72,7 +77,7 @@ function Converter() {
             className="cursor-pointer rounded-md bg-gray-400 border-2 max-w-full border-black p-4 text-white"
           />
         </article>
-        <article className="w-full sm:w-1/2 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+        <article className="w-full flex flex-wrap items-center justify-center gap-2">
           <label
             className="p-4 text-2xl font-bold whitespace-nowrap"
             for="conversion"
@@ -117,12 +122,17 @@ function Converter() {
           </article>
         </article>
         <button
-          onClick={handleSubmit}
-          className="border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_2rem_0.5rem_gray_inset] font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset]"
+          onClick={(e) => handleSubmit(e)}
+          className={`${
+            downloadUrl.length >= 2 ? "hidden" : "inline-block"
+          } border-2 rounded-md p-4 shadow-[0.1rem_0.1rem_2rem_0.5rem_gray_inset] font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset]`}
         >
           Upload & Convert
         </button>
-        <p ref={messageRef} className="animate-pulse duration-200 font-bold"></p>
+        <p
+          ref={messageRef}
+          className="animate-pulse duration-200 font-bold"
+        ></p>
         {downloadUrl && (
           <a
             href={downloadUrl}

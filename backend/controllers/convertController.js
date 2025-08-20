@@ -3,11 +3,11 @@ export const convertFile = async (req, res) => {
   try {
     const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_KEY1);
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      return res.status(400).json({ message: "No file uploaded" });
     }
     const { inputFormat, outputFormat } = req.body;
     if (!outputFormat) {
-      return res.status(400).json({ error: "Missing outputFormat" });
+      return res.status(400).json({ message: "Missing outputFormat" });
     }
     const job = await cloudConvert.jobs.create({
       tasks: {
@@ -37,7 +37,7 @@ export const convertFile = async (req, res) => {
     if (!exportTask?.result?.files?.length) {
       return res.status(500).json({
         error: "File conversion failed",
-        details: "No files returned from CloudConvert export task.",
+        message: "No files returned from CloudConvert export task.",
         job: completedJob,
       });
     }
@@ -50,14 +50,14 @@ export const convertFile = async (req, res) => {
     console.log(
       `File converted successfully from ${inputFormat} to ${outputFormat}`
     );
-    res.status(200).json({
+    return res.status(200).json({
       message: `File converted successfully from ${inputFormat} to ${outputFormat}`,
       fileUrl,
     });
   } catch (err) {
     console.log("Conversion Error:", err);
-    res
+    return res
       .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
+      .json({ error: "Internal Server Error", message: err.message });
   }
 };
