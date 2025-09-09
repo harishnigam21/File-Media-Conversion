@@ -1,5 +1,28 @@
-import Converter from "./Converter";
+import { useEffect, useState } from "react";
+import Header from "./components/Header";
+import Home from "./Home";
 function App() {
-  return <Converter />;
+  const [resolution, setResolution] = useState({
+    height: window.innerHeight,
+    width: window.innerWidth,
+  });
+  useEffect(() => {
+    const handleResize = () => {
+      setResolution({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  return (
+    <>
+      <Header size={resolution} />
+      <Home />
+    </>
+  );
 }
 export default App;
