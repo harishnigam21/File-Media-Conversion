@@ -36,7 +36,9 @@ export default function Home() {
             className="flex p-2 flex-col items-center gap-2 grow"
           >
             <item.icon
-              className={`text-primary text-7xl animate-${item.animation} animationDuration`}
+              className={`text-primary text-7xl ${
+                item.id === 2 ? "animate-spin" : "animate-pulse"
+              } animationDuration`}
             />
             <p>Step {index + 1} :</p>
             <p className="text-gray-600">{item.name}</p>

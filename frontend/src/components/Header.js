@@ -57,7 +57,7 @@ export default function Header({ size }) {
               </div>
               {item.submenu && (
                 <div
-                  className={`absolute bg-white ${
+                  className={`absolute right-0 bg-white ${
                     showConverter ? "flex" : "hidden"
                   } flex-wrap items-center p-4 rounded-lg gap-4 w-[500px] mt-14 border-2 box-border shrink animate-[visibleIn_1s_ease] border-black whitespace-normal`}
                   onMouseLeave={() => setShowConverter(!showConverter)}

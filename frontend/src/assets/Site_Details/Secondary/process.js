@@ -7,19 +7,16 @@ export default function Process() {
       id: 1,
       name: "Upload Files",
       icon: FaCloudUploadAlt,
-      animation: "pulse",
     },
     {
       id: 2,
       name: "Select Format & Convert",
       icon: IoSettings,
-      animation: "spin",
     },
     {
       id: 3,
       name: "Download Result",
       icon: FaCloudDownloadAlt,
-      animation: "pulse",
     },
   ];
   return list;
