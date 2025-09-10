@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Header from "./components/Header";
+import Header from "./Repeated_Component/Header";
 import Home from "./Home";
 function App() {
   const [resolution, setResolution] = useState({

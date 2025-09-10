@@ -24,7 +24,7 @@ export default function Header({ size }) {
           alt="site_logo"
           className="w-14 aspect-square"
         />
-        <strong className="timesFont text-2xl tracking-wider ">
+        <strong className="font-times text-2xl tracking-wider ">
           {siteInfo().site_name}
         </strong>
       </Link>
@@ -101,7 +101,7 @@ export default function Header({ size }) {
           alt="site_logo"
           className="w-14 aspect-square"
         />
-        <strong className="timesFont text-2xl tracking-wider ">
+        <strong className="font-times text-2xl tracking-wider ">
           {siteInfo().site_name}
         </strong>
       </Link>

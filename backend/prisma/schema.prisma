@@ -9,3 +9,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Users {
+  id              Int     @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  first_name      String  @db.VarChar(128)
+  middle_name     String? @db.VarChar(128)
+  last_name       String  @db.VarChar(128)
+  gender          String  @db.VarChar(45)
+  mobile_no       String  @unique(map: "mobile_no_UNIQUE") @db.VarChar(20)
+  email           String  @unique(map: "email_UNIQUE") @db.VarChar(128)
+  password        String  @db.VarChar(512)
+  reference_token String  @unique(map: "reference_token_UNIQUE") @db.VarChar(512)
+}

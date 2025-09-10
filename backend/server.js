@@ -9,13 +9,14 @@ const PORT = process.env.PORT || 8080;
 
 //middleware
 app.use(credentials);
-app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
 //app
 app.use("/api", require("./routes/convertRoutes"));
+app.use("/", require("./routes/Auth"));
 
 app.get("/", (req, res) => {
   res.send("Welcome to conversion Backend Server");

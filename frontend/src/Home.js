@@ -4,28 +4,154 @@ import Process from "./assets/Site_Details/Secondary/process";
 import Nav from "./assets/Site_Details/Primary/nav";
 import siteInfo from "./assets/Site_Details/Primary/siteInfo";
 import FAQ from "./assets/Site_Details/Secondary/faq";
-import { useState } from "react";
+import { useState, useRef } from "react";
 export default function Home() {
   const category = Nav().filter((item) => item.name === "Converters")[0]
     .submenu;
   const [faq, setFAQ] = useState(FAQ());
+  const [file, setFile] = useState(null);
+  const [inputFormat, setInputFormat] = useState("pdf");
+  const [outputFormat, setOutputFormat] = useState("pdf");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const messageRef = useRef(null);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    setDownloadUrl("");
+  };
+
+  const handleSubmit = async (e) => {
+    if (!file) {
+      e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+      messageRef.current.style.color = "red";
+      messageRef.current.textContent = "Please Choose file to move forward !";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("inputFormat", inputFormat);
+    formData.append("outputFormat", outputFormat);
+
+    try {
+      messageRef.current.style.color = "blue";
+      messageRef.current.textContent = "Uploading and converting file...";
+      setDownloadUrl("");
+
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_HOST}/api/convert`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        messageRef.current.style.color = "#008000";
+        messageRef.current.textContent = data.message;
+        setDownloadUrl(data.fileUrl || "");
+      } else {
+        e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+        messageRef.current.style.color = "red";
+        messageRef.current.textContent = `Upload failed : ${data.message}`;
+      }
+    } catch (error) {
+      e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+      messageRef.current.style.color = "red";
+      messageRef.current.textContent = `Error : ${error.message}`;
+      setDownloadUrl("");
+    }
+  };
   return (
     <section className="flex flex-col items-center gap-4 p-4 text-center py-12">
       <h1 className="text-4xl">Online File Converter</h1>
       <p className="text-gray-600 text-xl">Select File to convert</p>
       {/* upload section */}
-      <article className="p-8 w-full md:w-[75%] lg:w-1/2 rounded-md bg-[#8e949b]">
-        <article className="p-4 rounded-md flex flex-col items-center gap-4 bg-[#565f69]">
+      <article className="p-8 w-full md:w-[75%] lg:w-1/2 rounded-md bg-secondary1">
+        <article className="p-4 rounded-md flex flex-col items-center gap-4 bg-secondary2">
           <FiUpload className="text-5xl text-primary" />
           <p className="text-white">Drag your files here or upload</p>
-          <div className="flex relative w-full text-[#8e949b] justify-center items-center">
-            <p className="p-2 z-[1] bg-[#565f69]">OR</p>
+          <div className="flex relative w-full text-secondary1 justify-center items-center">
+            <p className="p-2 z-[1] bg-secondary2">OR</p>
             <p className="absolute border-t-2 w-1/2 border-black"></p>
           </div>
-          <button className="py-2 px-4 rounded-md bg-primary text-white">
-            Choose File
-          </button>
-          <p className="text-[#8e949b]">Up to 50MB</p>
+          <article className="flex flex-wrap gap-4 justify-center items-center shrink">
+            <input
+              id="chooseFile"
+              name="chooseFile"
+              type="file"
+              accept={`.${inputFormat}`}
+              onChange={handleFileChange}
+              className="py-2 px-4 rounded-md bg-secondary1 cursor-pointer w-full shrink"
+            />
+            <button
+              onClick={(e) => handleSubmit(e)}
+              className={`${
+                downloadUrl.length >= 2 ? "hidden" : "inline-block"
+              } border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white`}
+            >
+              Convert
+            </button>
+          </article>
+          <article className="flex gap-2 flex-wrap w-full justify-center items-center">
+            <div className="flex flex-nowrap items-center gap-2">
+              <label
+                htmlFor="from"
+                className="whitespace-nowrap text-white font-bold"
+              >
+                From :{" "}
+              </label>
+              <select
+                id="from"
+                name="from"
+                value={inputFormat}
+                onChange={(e) => setInputFormat(e.target.value)}
+                className="bg-secondary1 p-2 rounded-md"
+              >
+                <option value="pdf">PDF</option>{" "}
+                <option value="docx">DOCX</option>
+                <option value="xlsx">XLSX</option>{" "}
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </div>
+            <div className="flex flex-nowrap items-center gap-2">
+              <label
+                htmlFor="from"
+                className="whitespace-nowrap text-white font-bold"
+              >
+                To :{" "}
+              </label>
+              <select
+                value={outputFormat}
+                onChange={(e) => setOutputFormat(e.target.value)}
+                className="bg-secondary1 p-2 rounded-md"
+              >
+                <option value="pdf">PDF</option>{" "}
+                <option value="docx">DOCX</option>
+                <option value="xlsx">XLSX</option>{" "}
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </div>
+          </article>
+          {downloadUrl && (
+            <a
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-2 p-4 rounded-md border-green-500 shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_blue_inset]"
+            >
+              Download Converted File
+            </a>
+          )}
+          <p
+            ref={messageRef}
+            className="text-secondary1 animate-pulse duration-200 font-bold"
+          >
+            Up to 50MB
+          </p>
         </article>
       </article>
       {/* process section */}
@@ -52,7 +178,7 @@ export default function Home() {
           <article className="grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-3 w-full gap-4">
             {category.map((item, index) => (
               <article
-                key={`category/index`}
+                key={`category/${index}`}
                 className="flex flex-col gap-2 items-center border-2 rounded-md shadow-[0.1rem_0.1rem_0.5rem_0.05rem_gray] p-4 grow"
               >
                 <item.icon className="text-6xl text-gray-500" />

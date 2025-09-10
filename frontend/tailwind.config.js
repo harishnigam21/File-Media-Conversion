@@ -9,14 +9,23 @@ module.exports = {
       colors: {
         primary: {
           DEFAULT: "#0670f4",
-          light: "#6cb2eb",
-          dark: "#2779bd",
+          light: "#0670f4",
+          dark: "#0670f4",
         },
-        secondary: {
-          DEFAULT: "#bb7139",
-          light: "#fff38f",
-          dark: "#f2d024",
+        secondary1: {
+          DEFAULT: "#8e949b",
+          light: "#8e949b",
+          dark: "#8e949b",
         },
+        secondary2: {
+          DEFAULT: "#565f69",
+          light: "#565f69",
+          dark: "#565f69",
+        },
+      },
+      fontFamily: {
+        georgia: ["Georgia", "serif"],
+        times: ["'Times New Roman'", "serif"],
       },
     },
   },

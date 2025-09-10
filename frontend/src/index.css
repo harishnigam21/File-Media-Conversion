@@ -41,6 +41,41 @@ div {
   transition: all 0.5s ease;
 }
 
+input[type="file"] {
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="file"]::file-selector-button {
+  margin-bottom: 0.5rem; /* spacing between button & filename */
+}
+input[type="file"]::file-selector-button {
+  @apply bg-primary text-white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+input[type="file"]::file-selector-button:hover {
+  @apply bg-primary/75 text-white;
+}
+
+/* styling for loader and animating it as rotate */
+.loader {
+  aspect-ratio: 1;
+  margin: 1rem;
+  height: 20px;
+  width: 20px;
+  background-color: transparent;
+  border-top: 4px solid violet;
+  border-left: 4px solid indigo;
+  border-bottom: 4px solid blue;
+  border-right: 4px solid green;
+  border-radius: 50%;
+  animation: rotate 0.5s linear 0s infinite normal none;
+}
+
 .icon {
   cursor: pointer;
   transition: all 0.5s ease;
