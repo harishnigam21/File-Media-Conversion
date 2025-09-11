@@ -68,7 +68,6 @@ export default function SignIn() {
         });
         const data = await response.json();
         if (!response.ok) {
-          console.log(data);
           errorRef.current.textContent = data.message;
           return;
         }
@@ -106,7 +105,7 @@ export default function SignIn() {
       <article className="w-full md:w-[75%] lg:w-[50%] flex flex-col gap-4">
         <h1 className="text-3xl font-times text-center">Welcome back</h1>
         <p className="text-secondary1 tracking-wider text-center">
-          Sign In to your FileFlip account
+          Sign In to your {siteInfo().site_name} account
         </p>
         <form
           action=""

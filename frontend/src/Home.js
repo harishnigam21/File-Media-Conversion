@@ -4,7 +4,7 @@ import Process from "./assets/Site_Details/Secondary/process";
 import Nav from "./assets/Site_Details/Primary/nav";
 import siteInfo from "./assets/Site_Details/Primary/siteInfo";
 import FAQ from "./assets/Site_Details/Secondary/faq";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 export default function Home() {
   const category = Nav().filter((item) => item.name === "Converters")[0]
     .submenu;
@@ -14,11 +14,35 @@ export default function Home() {
   const [outputFormat, setOutputFormat] = useState("pdf");
   const [downloadUrl, setDownloadUrl] = useState("");
   const messageRef = useRef(null);
+  const [tempUser, setTempUser] = useState(() => {
+    const saved = window.localStorage.getItem("tempUser");
+    return saved ? JSON.parse(saved) : { used: 0, max: 2 };
+  });
+  const [limitExceeded, setLimitExceeded] = useState(() => {
+    const saved = window.localStorage.getItem("tempUser");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.used === parsed.max;
+    }
+    return false;
+  });
+
+  const tempUses = () => {
+    if (tempUser.used < tempUser.max) {
+      setTempUser((props) => ({ ...props, used: props.used + 1 }));
+    }
+  };
+  useEffect(() => {
+    if (tempUser.used === tempUser.max) {
+      setLimitExceeded(true);
+    }
+    window.localStorage.setItem("tempUser", JSON.stringify(tempUser));
+  }, [tempUser]);
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setDownloadUrl("");
   };
-
   const handleSubmit = async (e) => {
     if (!file) {
       e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
@@ -48,6 +72,7 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
+        tempUses();
         messageRef.current.style.color = "#008000";
         messageRef.current.textContent = data.message;
         setDownloadUrl(data.fileUrl || "");
@@ -70,72 +95,87 @@ export default function Home() {
       {/* upload section */}
       <article className="p-8 w-full md:w-[75%] lg:w-1/2 rounded-md bg-secondary1">
         <article className="p-4 rounded-md flex flex-col items-center gap-4 bg-secondary2">
-          <FiUpload className="text-5xl text-primary" />
-          <p className="text-white">Drag your files here or upload</p>
-          <div className="flex relative w-full text-secondary1 justify-center items-center">
-            <p className="p-2 z-[1] bg-secondary2">OR</p>
-            <p className="absolute border-t-2 w-1/2 border-black"></p>
-          </div>
-          <article className="flex flex-wrap gap-4 justify-center items-center shrink">
-            <input
-              id="chooseFile"
-              name="chooseFile"
-              type="file"
-              accept={`.${inputFormat}`}
-              onChange={handleFileChange}
-              className="py-2 px-4 rounded-md bg-secondary1 cursor-pointer w-full shrink"
-            />
-            <button
-              onClick={(e) => handleSubmit(e)}
-              className={`${
-                downloadUrl.length >= 2 ? "hidden" : "inline-block"
-              } border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white`}
-            >
-              Convert
-            </button>
-          </article>
-          <article className="flex gap-2 flex-wrap w-full justify-center items-center">
-            <div className="flex flex-nowrap items-center gap-2">
-              <label
-                htmlFor="from"
-                className="whitespace-nowrap text-white font-bold"
+          {limitExceeded ? (
+            <article className="p-4 min-h-[20vh] rounded-md flex flex-col items-center justify-center gap-4 bg-secondary2 grow">
+              <strong className="text-red-800 text-2xl animate-pulse">
+                You have excedded your free trial !
+              </strong>
+              <button
+                className="border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white"
               >
-                From :{" "}
-              </label>
-              <select
-                id="from"
-                name="from"
-                value={inputFormat}
-                onChange={(e) => setInputFormat(e.target.value)}
-                className="bg-secondary1 p-2 rounded-md"
-              >
-                <option value="pdf">PDF</option>{" "}
-                <option value="docx">DOCX</option>
-                <option value="xlsx">XLSX</option>{" "}
-                <option value="jpg">JPG</option>
-                <option value="png">PNG</option>
-              </select>
-            </div>
-            <div className="flex flex-nowrap items-center gap-2">
-              <label
-                htmlFor="from"
-                className="whitespace-nowrap text-white font-bold"
-              >
-                To :{" "}
-              </label>
-              <select
-                value={outputFormat}
-                onChange={(e) => setOutputFormat(e.target.value)}
-                className="bg-secondary1 p-2 rounded-md"
-              >
-                <option value="pdf">PDF</option>{" "}
-                <option value="docx">DOCX</option>
-                <option value="xlsx">XLSX</option>{" "}
-                <option value="jpg">JPG</option>
-                <option value="png">PNG</option>
-              </select>
-            </div>
-          </article>
+                Choose Plan
+              </button>
+            </article>
+          ) : (
+            <article className="flex flex-col items-center gap-4">
+              <FiUpload className="text-5xl text-primary" />
+              <p className="text-white">Drag your files here or upload</p>
+              <div className="flex relative w-full text-secondary1 justify-center items-center">
+                <p className="p-2 z-[1] bg-secondary2">OR</p>
+                <p className="absolute border-t-2 w-1/2 border-black"></p>
+              </div>
+              <article className="flex flex-wrap gap-4 justify-center items-center shrink">
+                <input
+                  id="chooseFile"
+                  name="chooseFile"
+                  type="file"
+                  accept={`.${inputFormat}`}
+                  onChange={handleFileChange}
+                  className="py-2 px-4 rounded-md bg-secondary1 cursor-pointer w-full shrink"
+                />
+                <button
+                  onClick={(e) => handleSubmit(e)}
+                  className={`${
+                    downloadUrl.length >= 2 ? "hidden" : "inline-block"
+                  } border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white`}
+                >
+                  Convert
+                </button>
+              </article>
+              <article className="flex gap-2 flex-wrap w-full justify-center items-center">
+                <div className="flex flex-nowrap items-center gap-2">
+                  <label
+                    htmlFor="from"
+                    className="whitespace-nowrap text-white font-bold"
+                  >
+                    From :{" "}
+                  </label>
+                  <select
+                    id="from"
+                    name="from"
+                    value={inputFormat}
+                    onChange={(e) => setInputFormat(e.target.value)}
+                    className="bg-secondary1 p-2 rounded-md"
+                  >
+                    <option value="pdf">PDF</option>{" "}
+                    <option value="docx">DOCX</option>
+                    <option value="xlsx">XLSX</option>{" "}
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                  </select>
+                </div>
+                <div className="flex flex-nowrap items-center gap-2">
+                  <label
+                    htmlFor="from"
+                    className="whitespace-nowrap text-white font-bold"
+                  >
+                    To :{" "}
+                  </label>
+                  <select
+                    value={outputFormat}
+                    onChange={(e) => setOutputFormat(e.target.value)}
+                    className="bg-secondary1 p-2 rounded-md"
+                  >
+                    <option value="pdf">PDF</option>{" "}
+                    <option value="docx">DOCX</option>
+                    <option value="xlsx">XLSX</option>{" "}
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                  </select>
+                </div>
+              </article>
+            </article>
+          )}
           {downloadUrl && (
             <a
               href={downloadUrl}
@@ -240,6 +280,21 @@ export default function Home() {
             </p>
           </article>
         ))}
+      </article>
+      {/* testing */}
+      <article className="w-full flex flex-col items-center md:w-[80%] lg:w-[70%] gap-4">
+        <article className="flex justify-center items-center gap-4">
+          <button
+            className="py-2 px-4 rounded-md bg-primary text-white"
+            onClick={tempUses}
+          >
+            Testing
+          </button>
+          <strong>
+            Used {tempUser.used} : Remaining {tempUser.max - tempUser.used} :{" "}
+            {`${limitExceeded}`}
+          </strong>
+        </article>
       </article>
     </section>
   );
