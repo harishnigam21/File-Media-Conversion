@@ -9,48 +9,49 @@ import { AiFillFilePpt } from "react-icons/ai";
 import { LuFiles } from "react-icons/lu";
 import { IoIosLogIn } from "react-icons/io";
 import { MdAppRegistration } from "react-icons/md";
+import { IoIosLogOut } from "react-icons/io";
 export default function Nav() {
   const list = [
     {
       id: 1,
       name: "Converters",
-      path: "/converters",
+      path: "converters",
       icon: SiConvertio,
       submenu: [
         {
           id: 1,
           name: "PDF Converter",
-          path: "/pdf_converter",
+          path: "pdf_converter",
           icon: FaFilePdf,
         },
         {
           id: 2,
           name: "PDF Merger",
-          path: "/pdf_merger",
+          path: "pdf_merger",
           icon: PiArrowsMergeBold,
         },
         {
           id: 3,
           name: "PDF Editor",
-          path: "/pdf_editor",
+          path: "pdf_editor",
           icon: MdEditDocument,
         },
         {
           id: 4,
           name: "DOCX Converter",
-          path: "/docx_converter",
+          path: "docx_converter",
           icon: FaFileWord,
         },
         {
           id: 5,
           name: "XLSX Converter",
-          path: "/xlsx_converter",
+          path: "xlsx_converter",
           icon: FaFileExcel,
         },
         {
           id: 6,
           name: "Presentation Converter",
-          path: "/presentation_converter",
+          path: "presentation_converter",
           icon: AiFillFilePpt,
         },
       ],
@@ -70,14 +71,20 @@ export default function Nav() {
     {
       id: 4,
       name: "Sign In",
-      path: "signIn",
+      path: "/signIn",
       icon: IoIosLogIn,
     },
     {
       id: 5,
       name: "Sign Up",
-      path: "signUp",
+      path: "/signUp",
       icon: MdAppRegistration,
+    },
+    {
+      id: 5,
+      name: "Sign Out",
+      path: "/signout",
+      icon: IoIosLogOut,
     },
   ];
   return list;

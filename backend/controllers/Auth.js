@@ -1,5 +1,8 @@
 const prisma = require("../shortcut/prisma_initilization");
+const encrypt = require("../utils/useFulFunction/encryption");
+
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const signIn = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -16,14 +19,58 @@ const signIn = async (req, res) => {
         redirect: "/signup",
       });
     }
+
     const checkPassword = bcrypt.compare(validUser.password, password);
     if (!checkPassword) {
       console.log(`${email} Incorrect Password`);
       return res.status(401).json({ message: "Incorrect Password" });
     }
 
+    const accessToken = jwt.sign(
+      { email: validUser.email },
+      process.env.ACCESS_TOKEN_KEY,
+      { expiresIn: "1d" }
+    );
+    const referenceToken = jwt.sign(
+      { email: validUser.email },
+      process.env.REFERENCE_TOKEN_KEY,
+      { expiresIn: "1d" }
+    );
+
+    const updateReferenceToken = await prisma.users.update({
+      where: { id: validUser.id },
+      data: { reference_token: referenceToken },
+    });
+    if (!updateReferenceToken) {
+      console.log("Failed to update token for your session");
+      return res
+        .status(400)
+        .json({ message: "Failed to update token for your session" });
+    }
+
+    const encryptedEmail = encrypt(email);
+    res.cookie("jwt", referenceToken, {
+      sameSite: "None",
+      httpOnly: true,
+      secure: true,
+      maxAge: 5 * 60 * 60 * 1000,
+    });
+    res.cookie("emenc", encryptedEmail, {
+      sameSite: "None",
+      httpOnly: true,
+      secure: true,
+      maxAge: 5 * 60 * 60 * 1000,
+    });
+
+    console.log("Successfully Updated token for your session");
     console.log("Successfully Logged In");
-    return res.status(200).json({ message: "Successfully Logged In" });
+    return res
+      .status(200)
+      .json({
+        message: "Successfully Logged In",
+        accessToken: accessToken,
+        encryptedEmail: encryptedEmail,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });

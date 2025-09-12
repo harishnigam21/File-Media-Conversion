@@ -14,6 +14,10 @@ const router = createBrowserRouter([
     element: <App />,
   },
   {
+    path: "/:email/home",
+    element: <App />,
+  },
+  {
     path: "/signin",
     element: <SignIn />,
   },
@@ -22,7 +26,7 @@ const router = createBrowserRouter([
     element: <SignUp />,
   },
   {
-    path: "/signout",
+    path: "signout",
     element: <SignOut />,
   },
   {

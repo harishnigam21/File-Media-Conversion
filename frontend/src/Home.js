@@ -5,6 +5,7 @@ import Nav from "./assets/Site_Details/Primary/nav";
 import siteInfo from "./assets/Site_Details/Primary/siteInfo";
 import FAQ from "./assets/Site_Details/Secondary/faq";
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 export default function Home() {
   const category = Nav().filter((item) => item.name === "Converters")[0]
     .submenu;
@@ -100,9 +101,7 @@ export default function Home() {
               <strong className="text-red-800 text-2xl animate-pulse">
                 You have excedded your free trial !
               </strong>
-              <button
-                className="border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white"
-              >
+              <button className="border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white">
                 Choose Plan
               </button>
             </article>
@@ -217,13 +216,14 @@ export default function Home() {
           <h3 className="text-2xl font-semibold">File Converter Categories</h3>
           <article className="grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-3 w-full gap-4">
             {category.map((item, index) => (
-              <article
+              <Link
+                to={item.path}
                 key={`category/${index}`}
                 className="flex flex-col gap-2 items-center border-2 rounded-md shadow-[0.1rem_0.1rem_0.5rem_0.05rem_gray] p-4 grow"
               >
                 <item.icon className="text-6xl text-gray-500" />
                 <p className="">{item.name}</p>
-              </article>
+              </Link>
             ))}
           </article>
         </article>

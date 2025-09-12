@@ -4,11 +4,15 @@ import { FaAngleDown } from "react-icons/fa";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { RxCross2 } from "react-icons/rx";
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 export default function Header({ size }) {
   const [showConverter, setShowConverter] = useState(false);
   const [slidebar, setSlidebar] = useState(false);
   const converterArrowRef = useRef(null);
+  const params = useParams();
+  const [last3, setLast3] = useState(
+    params.email ? { x: -1, y: undefined } : { x: -3, y: -1 }
+  );
   useEffect(() => {
     if (showConverter) {
       converterArrowRef.current?.classList.add("rotate-180");
@@ -37,7 +41,7 @@ export default function Header({ size }) {
       />
       <article className="flex gap-4 items-center">
         {Nav()
-          .slice(0, -2)
+          .slice(0, -3)
           .map((item, index) => (
             <div
               key={`navbar/firsthalf/item/${index}`}
@@ -63,13 +67,14 @@ export default function Header({ size }) {
                   onMouseLeave={() => setShowConverter(!showConverter)}
                 >
                   {item.submenu.map((inthere, index) => (
-                    <div
+                    <Link
+                      to={inthere.path}
                       key={`navbar/firsthalf/item/${item.name}/sub/${index}`}
                       className="flex flex-col justify-between p-2 gap-2 items-center w-24 aspect-square text-center"
                     >
                       <inthere.icon className="text-4xl text-primary" />
                       <p>{inthere.name}</p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -81,7 +86,7 @@ export default function Header({ size }) {
       </div>
       <article className="flex gap-4 items-center">
         {Nav()
-          .slice(-2)
+          .slice(last3.x, last3.y)
           .map((item, index) => (
             <Link
               key={`navbar/secondhalf/item/${index}`}

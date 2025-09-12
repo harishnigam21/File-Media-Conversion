@@ -65,6 +65,7 @@ export default function SignIn() {
             email: userCredentials.email,
             password: userCredentials.password,
           }),
+          credentials: "include",
         });
         const data = await response.json();
         if (!response.ok) {
@@ -74,7 +75,7 @@ export default function SignIn() {
         errorRef.current.style.color = "green";
         errorRef.current.textContent = data.message;
         setTimeout(() => {
-          navigate("/", { replace: true });
+          navigate(`/${data.encryptedEmail}/home`, { replace: true });
         }, 2000);
       } catch (error) {
         console.log(error.message);
