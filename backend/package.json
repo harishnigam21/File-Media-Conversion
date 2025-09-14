@@ -23,6 +23,7 @@
     "dotenv": "^16.4.7",
     "effect": "3.14.14",
     "http": "^0.0.1-security",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "nodemailer": "^6.10.0",

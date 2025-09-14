@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
     "@uploadthing/react": "^7.3.2",
     "effect": "3.14.14",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.535.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

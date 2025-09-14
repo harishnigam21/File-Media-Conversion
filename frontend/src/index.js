@@ -7,6 +7,7 @@ import SignIn from "./Auth_Component/SignIn";
 import SignUp from "./Auth_Component/SignUp";
 import SignOut from "./Auth_Component/SignOut";
 import ForgotPassword from "./Auth_Component/ForgotPassword";
+import Plan from "./Plans/Plan";
 
 const router = createBrowserRouter([
   {
@@ -26,7 +27,11 @@ const router = createBrowserRouter([
     element: <SignUp />,
   },
   {
-    path: "signout",
+    path: "/:email/:something/plans",
+    element: <Plan />,
+  },
+  {
+    path: "/signout",
     element: <SignOut />,
   },
   {

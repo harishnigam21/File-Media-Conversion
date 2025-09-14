@@ -4,9 +4,17 @@ import Process from "./assets/Site_Details/Secondary/process";
 import Nav from "./assets/Site_Details/Primary/nav";
 import siteInfo from "./assets/Site_Details/Primary/siteInfo";
 import FAQ from "./assets/Site_Details/Secondary/faq";
-import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-export default function Home() {
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+export default function Home({
+  tempUses,
+  limitExceeded,
+  params,
+  tempUser,
+  fingerprint,
+  setLimitExceeded,
+  setTempUser,
+}) {
   const category = Nav().filter((item) => item.name === "Converters")[0]
     .submenu;
   const [faq, setFAQ] = useState(FAQ());
@@ -15,30 +23,7 @@ export default function Home() {
   const [outputFormat, setOutputFormat] = useState("pdf");
   const [downloadUrl, setDownloadUrl] = useState("");
   const messageRef = useRef(null);
-  const [tempUser, setTempUser] = useState(() => {
-    const saved = window.localStorage.getItem("tempUser");
-    return saved ? JSON.parse(saved) : { used: 0, max: 2 };
-  });
-  const [limitExceeded, setLimitExceeded] = useState(() => {
-    const saved = window.localStorage.getItem("tempUser");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return parsed.used === parsed.max;
-    }
-    return false;
-  });
-
-  const tempUses = () => {
-    if (tempUser.used < tempUser.max) {
-      setTempUser((props) => ({ ...props, used: props.used + 1 }));
-    }
-  };
-  useEffect(() => {
-    if (tempUser.used === tempUser.max) {
-      setLimitExceeded(true);
-    }
-    window.localStorage.setItem("tempUser", JSON.stringify(tempUser));
-  }, [tempUser]);
+  const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -62,31 +47,60 @@ export default function Home() {
       messageRef.current.textContent = "Uploading and converting file...";
       setDownloadUrl("");
 
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_HOST}/api/convert`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
+      const url = `${process.env.REACT_APP_BACKEND_HOST}/user_entry`;
+      const response = await fetch(url, {
+        headers: { "content-type": "application/json" },
+        method: "POST",
+        body: JSON.stringify({ fingerprint, tempUser, params }),
+        credentials: "include",
+      });
       const data = await response.json();
-
-      if (response.ok) {
-        tempUses();
-        messageRef.current.style.color = "#008000";
-        messageRef.current.textContent = data.message;
-        setDownloadUrl(data.fileUrl || "");
-      } else {
-        e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+      if (!response.ok) {
+        if (response.status === 402) {
+          setLimitExceeded(true);
+          setTempUser({ used: tempUser.max, max: tempUser.max });
+        }
+        if (response.status === 401) {
+          setTimeout(() => {
+            navigate("/signin");
+          }, 2000);
+        }
         messageRef.current.style.color = "red";
         messageRef.current.textContent = `Upload failed : ${data.message}`;
+        return;
+      }
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_BACKEND_HOST}/api/convert`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          tempUses();
+          messageRef.current.style.color = "#008000";
+          messageRef.current.textContent = data.message;
+          setDownloadUrl(data.fileUrl || "");
+        } else {
+          e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+          messageRef.current.style.color = "red";
+          messageRef.current.textContent = `Upload failed : ${data.message}`;
+        }
+      } catch (error) {
+        e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+        messageRef.current.style.color = "red";
+        messageRef.current.textContent = `Error : ${error.message}`;
+        setDownloadUrl("");
       }
     } catch (error) {
+      console.log(error);
       e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
       messageRef.current.style.color = "red";
       messageRef.current.textContent = `Error : ${error.message}`;
-      setDownloadUrl("");
     }
   };
   return (
@@ -98,12 +112,14 @@ export default function Home() {
         <article className="p-4 rounded-md flex flex-col items-center gap-4 bg-secondary2">
           {limitExceeded ? (
             <article className="p-4 min-h-[20vh] rounded-md flex flex-col items-center justify-center gap-4 bg-secondary2 grow">
-              <strong className="text-red-800 text-2xl animate-pulse">
+              <strong className="text-red-800 text-2xl animate-pulse font-georgia">
                 You have excedded your free trial !
               </strong>
-              <button className="border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white">
-                Choose Plan
-              </button>
+              <Link to={params.email ? "plans" : "/signin"}>
+                <button className="border-2 border-secondary1 rounded-md py-2 px-4 font-bold focus:shadow-[0.1rem_0.1rem_2rem_0.5rem_green_inset] bg-primary text-white">
+                  Choose Plan
+                </button>
+              </Link>
             </article>
           ) : (
             <article className="flex flex-col items-center gap-4">

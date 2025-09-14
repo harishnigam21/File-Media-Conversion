@@ -22,7 +22,10 @@ export default function Header({ size }) {
   }, [showConverter]);
   return size.width > 950 ? (
     <header className="sticky top-0 bg-white flex flex-nowrap gap-4 py-2 px-4 items-center shadow-[0.1rem_0.1rem_0.2rem_0.1rem_gray] whitespace-nowrap z-10">
-      <Link to={"/"} className="flex gap-2 items-center">
+      <Link
+        to={params.email ? `/${params.email}/home` : "/"}
+        className="flex gap-2 items-center"
+      >
         <img
           src={siteInfo().logo}
           alt="site_logo"
@@ -100,7 +103,10 @@ export default function Header({ size }) {
     </header>
   ) : (
     <header className="sticky top-0 bg-white flex flex-nowrap gap-4 py-2 px-4 items-center shadow-[0.1rem_0.1rem_0.2rem_0.1rem_gray] whitespace-nowrap justify-between z-10">
-      <Link to={"/"} className="flex gap-2 items-center">
+      <Link
+        to={params.email ? `/${params.email}/home` : "/"}
+        className="flex gap-2 items-center"
+      >
         <img
           src={siteInfo().logo}
           alt="site_logo"
@@ -129,49 +135,96 @@ export default function Header({ size }) {
               setSlidebar(false);
             }}
           >
-            {Nav().map((item, index) => (
-              <div
-                key={`SlideMenuItem/item/${index}`}
-                className="flex flex-col gap-4"
-              >
+            {Nav()
+              .slice(0, -3)
+              .map((item, index) => (
                 <div
-                  key={`SlideMenuItem/${index}`}
-                  className="flex gap-4 items-center"
+                  key={`SlideMenuItem/item/${index}`}
+                  className="flex flex-col gap-4"
                 >
-                  <item.icon className="text-2xl text-primary" />
-                  <Link to={item.path} className="grow">
-                    {item.name}
-                  </Link>
+                  <div
+                    key={`SlideMenuItem/${index}`}
+                    className="flex gap-4 items-center"
+                  >
+                    <item.icon className="text-2xl text-primary" />
+                    <Link to={item.path} className="grow">
+                      {item.name}
+                    </Link>
+                    {item.submenu && (
+                      <FaAngleDown
+                        className="cursor-pointer"
+                        ref={converterArrowRef}
+                        onClick={() => {
+                          setShowConverter(!showConverter);
+                        }}
+                      />
+                    )}
+                  </div>
                   {item.submenu && (
-                    <FaAngleDown
-                      className="cursor-pointer"
-                      ref={converterArrowRef}
-                      onClick={() => {
-                        setShowConverter(!showConverter);
-                      }}
-                    />
+                    <article
+                      className={`${
+                        showConverter ? "flex" : "hidden"
+                      } flex-col gap-4 ml-8`}
+                    >
+                      {item.submenu.map((inthere, index) => (
+                        <Link
+                          to={inthere.path}
+                          key={`SlideMenuItem/item/${item.name}/sub/${index}`}
+                          className="flex gap-2 items-center"
+                        >
+                          <inthere.icon className="text-xl text-primary" />
+                          <p className="grow">{inthere.name}</p>
+                        </Link>
+                      ))}
+                    </article>
                   )}
                 </div>
-                {item.submenu && (
-                  <article
-                    className={`${
-                      showConverter ? "flex" : "hidden"
-                    } flex-col gap-4 ml-8`}
+              ))}
+            {Nav()
+              .slice(last3.x, last3.y)
+              .map((item, index) => (
+                <div
+                  key={`SlideMenuItem/item/${index}`}
+                  className="flex flex-col gap-4"
+                >
+                  <div
+                    key={`SlideMenuItem/${index}`}
+                    className="flex gap-4 items-center"
                   >
-                    {item.submenu.map((inthere, index) => (
-                      <Link
-                        to={inthere.path}
-                        key={`SlideMenuItem/item/${item.name}/sub/${index}`}
-                        className="flex gap-2 items-center"
-                      >
-                        <inthere.icon className="text-xl text-primary" />
-                        <p className="grow">{inthere.name}</p>
-                      </Link>
-                    ))}
-                  </article>
-                )}
-              </div>
-            ))}
+                    <item.icon className="text-2xl text-primary" />
+                    <Link to={item.path} className="grow">
+                      {item.name}
+                    </Link>
+                    {item.submenu && (
+                      <FaAngleDown
+                        className="cursor-pointer"
+                        ref={converterArrowRef}
+                        onClick={() => {
+                          setShowConverter(!showConverter);
+                        }}
+                      />
+                    )}
+                  </div>
+                  {item.submenu && (
+                    <article
+                      className={`${
+                        showConverter ? "flex" : "hidden"
+                      } flex-col gap-4 ml-8`}
+                    >
+                      {item.submenu.map((inthere, index) => (
+                        <Link
+                          to={inthere.path}
+                          key={`SlideMenuItem/item/${item.name}/sub/${index}`}
+                          className="flex gap-2 items-center"
+                        >
+                          <inthere.icon className="text-xl text-primary" />
+                          <p className="grow">{inthere.name}</p>
+                        </Link>
+                      ))}
+                    </article>
+                  )}
+                </div>
+              ))}
           </article>
         )}
       </article>

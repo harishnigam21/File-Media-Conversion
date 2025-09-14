@@ -51,26 +51,22 @@ const signIn = async (req, res) => {
     const encryptedEmail = encrypt(email);
     res.cookie("jwt", referenceToken, {
       sameSite: "None",
-      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
     });
     res.cookie("emenc", encryptedEmail, {
       sameSite: "None",
-      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
     });
 
     console.log("Successfully Updated token for your session");
     console.log("Successfully Logged In");
-    return res
-      .status(200)
-      .json({
-        message: "Successfully Logged In",
-        accessToken: accessToken,
-        encryptedEmail: encryptedEmail,
-      });
+    return res.status(200).json({
+      message: "Successfully Logged In",
+      accessToken: accessToken,
+      encryptedEmail: encryptedEmail,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });

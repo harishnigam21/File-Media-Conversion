@@ -70,6 +70,11 @@ export default function SignIn() {
         const data = await response.json();
         if (!response.ok) {
           errorRef.current.textContent = data.message;
+          if (response.status === 403) {
+            setTimeout(() => {
+              navigate(`/signup`, { replace: true });
+            }, 2000);
+          }
           return;
         }
         errorRef.current.style.color = "green";

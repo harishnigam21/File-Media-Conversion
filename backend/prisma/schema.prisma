@@ -20,3 +20,17 @@ model Users {
   password        String  @db.VarChar(512)
   reference_token String  @unique(map: "reference_token_UNIQUE") @db.VarChar(512)
 }
+
+model GuestUser {
+  id          Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  ip          String @db.VarChar(128)
+  session     String @db.VarChar(256)
+  fingerprint String @unique(map: "fingerprint_UNIQUE") @db.VarChar(125)
+}
+
+model PaidUser {
+  id      Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  email   String @unique(map: "email_UNIQUE") @db.VarChar(128)
+  session String @db.VarChar(256)
+  plan    String @db.VarChar(128)
+}
