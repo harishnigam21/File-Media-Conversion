@@ -51,11 +51,13 @@ const signIn = async (req, res) => {
     const encryptedEmail = encrypt(email);
     res.cookie("jwt", referenceToken, {
       sameSite: "None",
+      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
     });
     res.cookie("emenc", encryptedEmail, {
       sameSite: "None",
+      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
     });
