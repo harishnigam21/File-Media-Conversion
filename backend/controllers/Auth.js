@@ -1,5 +1,5 @@
 const prisma = require("../shortcut/prisma_initilization");
-const encrypt = require("../utils/useFulFunction/encryption");
+const encrypt = require("../utils/useFulFunction/encryption.js");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
