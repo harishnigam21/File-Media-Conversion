@@ -13,6 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors(corsOptions));
+//get correct IP
+app.set("trust proxy", true);
 
 //app
 app.use("/api", require("./routes/convertRoutes"));
