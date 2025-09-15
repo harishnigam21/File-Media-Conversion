@@ -54,12 +54,14 @@ const signIn = async (req, res) => {
       httpOnly: false,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
+      domain: `${process.env.COOKIE_DOMAIN}`,
     });
     res.cookie("emenc", encryptedEmail, {
       sameSite: "None",
       httpOnly: false,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
+      domain: `${process.env.COOKIE_DOMAIN}`,
     });
 
     console.log("Successfully Updated token for your session");
