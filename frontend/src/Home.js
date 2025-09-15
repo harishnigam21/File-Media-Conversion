@@ -231,12 +231,15 @@ export default function Home({
       </article>
       {/* categories */}
       {category && (
-        <article className="p-8 w-full rounded-md flex flex-col gap-4">
+        <article
+          id="converters"
+          className="p-8 w-full rounded-md flex flex-col gap-4"
+        >
           <h3 className="text-2xl font-semibold">File Converter Categories</h3>
           <article className="grid grid-cols-1 xsm:grid-cols-2 md:grid-cols-3 w-full gap-4">
             {category.map((item, index) => (
               <Link
-                to={item.path}
+                to={params.email ? item.path : "/signin"}
                 key={`category/${index}`}
                 className="flex flex-col gap-2 items-center border-2 rounded-md shadow-[0.1rem_0.1rem_0.5rem_0.05rem_gray] p-4 grow"
               >
@@ -284,11 +287,13 @@ export default function Home({
               }
             >
               <h3 className="text-left">{item.question}</h3>
-              <IoMdArrowDropdown
-                className={`cursor-pointer text-3xl text-gray-600 hover:text-gray-800 transition-all ${
-                  item.status ? "rotate-180" : "rotate-0"
-                }`}
-              />
+              <div>
+                <IoMdArrowDropdown
+                  className={`cursor-pointer text-3xl text-gray-600 hover:text-gray-800 transition-all ${
+                    item.status ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </div>
             </div>
             <p
               className={`${
@@ -299,21 +304,6 @@ export default function Home({
             </p>
           </article>
         ))}
-      </article>
-      {/* testing */}
-      <article className="w-full flex flex-col items-center md:w-[80%] lg:w-[70%] gap-4">
-        <article className="flex justify-center items-center gap-4">
-          <button
-            className="py-2 px-4 rounded-md bg-primary text-white"
-            onClick={tempUses}
-          >
-            Testing
-          </button>
-          <strong>
-            Used {tempUser.used} : Remaining {tempUser.max - tempUser.used} :{" "}
-            {`${limitExceeded}`}
-          </strong>
-        </article>
       </article>
     </section>
   );

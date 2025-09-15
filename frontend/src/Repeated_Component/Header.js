@@ -71,7 +71,7 @@ export default function Header({ size }) {
                 >
                   {item.submenu.map((inthere, index) => (
                     <Link
-                      to={inthere.path}
+                      to={params.email ? inthere.path : "/signin"}
                       key={`navbar/firsthalf/item/${item.name}/sub/${index}`}
                       className="flex flex-col justify-between p-2 gap-2 items-center w-24 aspect-square text-center"
                     >
@@ -168,7 +168,7 @@ export default function Header({ size }) {
                     >
                       {item.submenu.map((inthere, index) => (
                         <Link
-                          to={inthere.path}
+                          to={params.email ? inthere.path : "/signin"}
                           key={`SlideMenuItem/item/${item.name}/sub/${index}`}
                           className="flex gap-2 items-center"
                         >
@@ -213,7 +213,7 @@ export default function Header({ size }) {
                     >
                       {item.submenu.map((inthere, index) => (
                         <Link
-                          to={inthere.path}
+                          to={params.email ? inthere.path : "/signin"}
                           key={`SlideMenuItem/item/${item.name}/sub/${index}`}
                           className="flex gap-2 items-center"
                         >

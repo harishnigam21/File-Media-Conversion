@@ -50,8 +50,8 @@ export default function Nav() {
         },
         {
           id: 6,
-          name: "Presentation Converter",
-          path: "presentation_converter",
+          name: "PPT Converter",
+          path: "ppt_converter",
           icon: AiFillFilePpt,
         },
       ],
