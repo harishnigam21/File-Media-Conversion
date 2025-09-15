@@ -42,13 +42,14 @@ function App() {
         setFingerprint(result.visitorId);
       });
     });
-    if (params.email) {
-      if (params.email !== emailCookie) {
-        alert("Your session has been expired, please SignIn again.");
-        navigate("/signin");
-      }
-      return;
-    }
+    // solve this problem later
+    // if (params.email) {
+    //   if (params.email !== emailCookie) {
+    //     alert("Your session has been expired, please SignIn again.");
+    //     navigate("/signin");
+    //   }
+    //   return;
+    // }
   }, []);
   useEffect(() => {
     const handleResize = () => {
