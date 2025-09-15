@@ -24,13 +24,15 @@ model Users {
 model GuestUser {
   id          Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
   ip          String @db.VarChar(128)
-  session     String @db.VarChar(256)
   fingerprint String @unique(map: "fingerprint_UNIQUE") @db.VarChar(125)
+  used        Int?
+  max         Int?
 }
 
 model PaidUser {
-  id      Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
-  email   String @unique(map: "email_UNIQUE") @db.VarChar(128)
-  session String @db.VarChar(256)
-  plan    String @db.VarChar(128)
+  id    Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  email String @unique(map: "email_UNIQUE") @db.VarChar(128)
+  plan  String @db.VarChar(128)
+  used  Int?
+  max   Int?
 }

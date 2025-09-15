@@ -56,9 +56,12 @@ export default function Home({
       });
       const data = await response.json();
       if (!response.ok) {
-        if (response.status === 402) {
+        if (response.status === 421) {
           setLimitExceeded(true);
-          setTempUser({ used: tempUser.max, max: tempUser.max });
+          setTempUser({
+            used: data.lastDBValue.max,
+            max: data.lastDBValue.max,
+          });
         }
         if (response.status === 401) {
           setTimeout(() => {

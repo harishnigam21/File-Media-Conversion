@@ -28,7 +28,8 @@ const userEntry = async (req, res) => {
           data: {
             email: ExistingUser.email,
             plan: "trial",
-            session: JSON.stringify({ ...tempUser, used: tempUser + 1 }),
+            used: 1,
+            max: tempUser.max,
           },
         });
         if (!updateUser) {
@@ -43,15 +44,26 @@ const userEntry = async (req, res) => {
           message: "Successfully updated paid User data",
         });
       }
-      const checkInGuestSession = JSON.parse(checkInGuest.session);
+      if (checkInGuest.used === checkInGuest.max) {
+        console.log("Your free trial ended && you don't have any plan yet");
+        return res.status(421).json({
+          message: "Your free trial ended && you don't have any plan yet",
+          lastDBValue: { used: checkInGuest.used, max: checkInGuest.max },
+        });
+      }
       const updateUser = await prisma.paidUser.create({
         data: {
           email: ExistingUser.email,
           plan: "trial",
-          session: checkInGuest.session,
+          used: checkInGuest.used + 1,
+          max: checkInGuest.max,
         },
       });
-      if (!updateUser) {
+      const alsoUpdateCheckInGuest = await prisma.guestUser.update({
+        where: { id: checkInGuest.id },
+        data: { used: checkInGuest.used + 1 },
+      });
+      if (!updateUser || !alsoUpdateCheckInGuest) {
         console.log("Failed to update Paid User Data");
         return res.status(503).json({
           message:
@@ -61,35 +73,28 @@ const userEntry = async (req, res) => {
       console.log(
         "Successfully updated paid User data from its guest User data"
       );
-      if (checkInGuestSession.used === checkInGuestSession.max) {
-        console.log("Your free trial ended && you don't have any plan yet");
-        return res.status(402).json({
-          message: "Your free trial ended && you don't have any plan yet",
-        });
-      }
+
       console.log("all checked cleared");
       return res.status(200).json({ message: "all checked cleared" });
     }
 
-    const ExistingUserSession = JSON.parse(planExist.session);
     if (
       tempUser.used === tempUser.max ||
-      ExistingUserSession.used === ExistingUserSession.max ||
-      ExistingUserSession !== tempUser
+      planExist.used === planExist.max ||
+      planExist.used !== tempUser.used ||
+      planExist.max !== tempUser.max
     ) {
-      return res.status(402).json({
+      return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
+        lastDBValue: { used: planExist.used, max: planExist.max },
       });
     }
 
     const updateUser = await prisma.paidUser.update({
       where: { id: planExist.id },
       data: {
-        session: JSON.stringify({
-          ...ExistingUserSession,
-          used: ExistingUserSession.used + 1,
-        }),
+        used: planExist.used + 1,
       },
     });
     if (!updateUser) {
@@ -112,7 +117,8 @@ const userEntry = async (req, res) => {
       const createGuestUser = await prisma.guestUser.create({
         data: {
           ip: ip,
-          session: JSON.stringify({ ...tempUser, used: tempUser.used + 1 }),
+          used: tempUser.used + 1,
+          max: tempUser.max,
           fingerprint: fingerprint,
         },
       });
@@ -128,25 +134,23 @@ const userEntry = async (req, res) => {
         .status(200)
         .json({ message: "Successfully created guest User" });
     }
-    const ExistingUserSession = JSON.parse(ExistingUser.session);
     if (
       tempUser.used === tempUser.max ||
-      ExistingUserSession.used === ExistingUserSession.max ||
-      ExistingUserSession !== tempUser
+      ExistingUser.used === ExistingUser.max ||
+      ExistingUser.used !== tempUser.used ||
+      ExistingUser.max !== tempUser.used
     ) {
-      return res.status(402).json({
+      return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
+        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
       });
     }
     const updateUser = await prisma.guestUser.update({
       where: { id: ExistingUser.id },
       data: {
         ip: ip,
-        session: JSON.stringify({
-          ...ExistingUserSession,
-          used: ExistingUserSession.used + 1,
-        }),
+        used: ExistingUser.used + 1,
       },
     });
     if (!updateUser) {
