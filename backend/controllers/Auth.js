@@ -51,17 +51,15 @@ const signIn = async (req, res) => {
     const encryptedEmail = encrypt(email);
     res.cookie("jwt", referenceToken, {
       sameSite: "None",
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
-      domain: `${process.env.COOKIE_DOMAIN}`,
     });
     res.cookie("emenc", encryptedEmail, {
       sameSite: "None",
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       maxAge: 5 * 60 * 60 * 1000,
-      domain: `${process.env.COOKIE_DOMAIN}`,
     });
 
     console.log("Successfully Updated token for your session");
