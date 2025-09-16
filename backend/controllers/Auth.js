@@ -20,7 +20,7 @@ const signIn = async (req, res) => {
       });
     }
 
-    const checkPassword = bcrypt.compare(validUser.password, password);
+    const checkPassword = await bcrypt.compare(password, validUser.password);
     if (!checkPassword) {
       console.log(`${email} Incorrect Password`);
       return res.status(401).json({ message: "Incorrect Password" });

@@ -75,6 +75,7 @@ export default function SignIn() {
               navigate(`/signup`, { replace: true });
             }, 2000);
           }
+          form.children[1].classList.add("hidden");
           return;
         }
         errorRef.current.style.color = "green";
@@ -85,17 +86,16 @@ export default function SignIn() {
       } catch (error) {
         console.log(error.message);
         errorRef.current.textContent = error.message;
+        form.children[1].classList.add("hidden");
       }
     };
 
     setTimeout(() => {
-      errorRef.current.textContent = validateEmail(userCredentials.email)
-        ? validateEmail(userCredentials.email)
-        : validatePassword(userCredentials.password);
-      !validateEmail(userCredentials.email) &&
-        !validatePassword(userCredentials.password) &&
-        verifyUser();
-      form.children[1].classList.add("hidden");
+      errorRef.current.textContent = validateEmail(userCredentials.email);
+
+      !validateEmail(userCredentials.email)
+        ? verifyUser()
+        : form.children[1].classList.add("hidden");
     }, 1000);
   };
   return (
