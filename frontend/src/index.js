@@ -17,6 +17,9 @@ import PDFmerger from "./Separate_Converter_Page/pdfMerger";
 import PPTconverter from "./Separate_Converter_Page/pptConverter";
 import XLSXconverter from "./Separate_Converter_Page/xlsxConverter";
 
+//only testing purpose
+import FileUploader from "./Plans/Testing";
+
 function Root() {
   const router = createBrowserRouter([
     {
@@ -70,6 +73,11 @@ function Root() {
     {
       path: "/forgot_password",
       element: <ForgotPassword />,
+    },
+    // delete after final build
+    {
+      path: "/testing",
+      element: <FileUploader />,
     },
   ]);
   return <RouterProvider router={router} />;

@@ -79,6 +79,7 @@ export default function SignUp() {
     form.children[1].classList.remove("hidden");
 
     const verifyUser = async () => {
+      form.children[1].classList.remove("hidden");
       try {
         const url = `${process.env.REACT_APP_BACKEND_HOST}/signup`;
         const response = await fetch(url, {
@@ -94,6 +95,7 @@ export default function SignUp() {
             }, 2000);
           }
           errorRef.current.textContent = data.message;
+          form.children[1].classList.add("hidden");
           return;
         }
         errorRef.current.style.color = "green";
@@ -104,6 +106,7 @@ export default function SignUp() {
       } catch (error) {
         console.log(error.message);
         errorRef.current.textContent = error.message;
+        form.children[1].classList.add("hidden");
       }
     };
 

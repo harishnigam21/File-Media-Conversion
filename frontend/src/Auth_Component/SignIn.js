@@ -168,12 +168,12 @@ export default function SignIn() {
               {passwordStatus ? (
                 <IoMdEyeOff
                   className="cursor-pointer text-2xl absolute right-2"
-                  onClick={() => setPasswordStatus(false)}
+                  onMouseLeave={() => setPasswordStatus(false)}
                 />
               ) : (
                 <IoMdEye
                   className="cursor-pointer text-2xl absolute right-2"
-                  onClick={() => setPasswordStatus(true)}
+                  onMouseEnter={() => setPasswordStatus(true)}
                 />
               )}
             </div>
