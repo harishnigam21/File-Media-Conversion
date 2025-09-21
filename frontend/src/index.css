@@ -41,14 +41,6 @@ div {
   transition: all 0.5s ease;
 }
 
-input[type="file"] {
-  display: flex;
-  flex-direction: column;
-}
-
-input[type="file"]::file-selector-button {
-  margin-bottom: 0.5rem; /* spacing between button & filename */
-}
 input[type="file"]::file-selector-button {
   @apply bg-primary text-white;
   padding: 0.5rem 1rem;
@@ -86,6 +78,11 @@ input[type="file"]::file-selector-button:hover {
 .noscrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+td,
+th {
+  padding: 0.5rem 1rem;
+  text-align: center;
 }
 .animationDuration {
   animation-duration: 3s;

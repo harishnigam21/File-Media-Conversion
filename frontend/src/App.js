@@ -1,8 +1,7 @@
-import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import Header from "./Repeated_Component/Header";
 import Home from "./Home";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
 function App() {
   const [resolution, setResolution] = useState({
@@ -10,8 +9,6 @@ function App() {
     width: window.innerWidth,
   });
   const params = useParams();
-  const navigate = useNavigate();
-  const emailCookie = Cookies.get("emenc");
   const [fingerprint, setFingerprint] = useState(null);
   const [tempUser, setTempUser] = useState(() => {
     const saved = window.localStorage.getItem("tempUser");

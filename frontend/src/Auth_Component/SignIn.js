@@ -21,35 +21,6 @@ export default function SignIn() {
     }
   }
 
-  function validatePassword(password) {
-    const lowercase = /[a-z]/;
-    const uppercase = /[A-Z]/;
-    const digit = /\d/;
-    const specialChar = /[@$!%*?&]/;
-    const noSpace = /^\S+$/;
-    if (!password) {
-      return "Password is required.";
-    }
-    if (password.length < 8) {
-      return "Password must be at least 8 characters long.";
-    }
-    if (!lowercase.test(password)) {
-      return "Password must include at least one lowercase letter.";
-    }
-    if (!uppercase.test(password)) {
-      return "Password must include at least one uppercase letter.";
-    }
-    if (!digit.test(password)) {
-      return "Password must include at least one number.";
-    }
-    if (!specialChar.test(password)) {
-      return "Password must include at least one special character (@$!%*?&).";
-    }
-    if (!noSpace.test(password)) {
-      return "Password must not contain spaces.";
-    }
-  }
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = e.currentTarget;

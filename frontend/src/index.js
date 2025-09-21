@@ -9,6 +9,9 @@ import SignOut from "./Auth_Component/SignOut";
 import ForgotPassword from "./Auth_Component/ForgotPassword";
 import Plan from "./Plans/Plan";
 
+//Invoice Template
+import Template1 from "./Invoice_Template/Template1";
+
 // separate converter pages
 import DOCXconverter from "./Separate_Converter_Page/docxConverter";
 import PDFconverter from "./Separate_Converter_Page/pdfConverter";
@@ -18,7 +21,7 @@ import PPTconverter from "./Separate_Converter_Page/pptConverter";
 import XLSXconverter from "./Separate_Converter_Page/xlsxConverter";
 
 //only testing purpose
-import FileUploader from "./Plans/Testing";
+import Testing from "./Plans/Testing";
 
 function Root() {
   const router = createBrowserRouter([
@@ -74,18 +77,19 @@ function Root() {
       path: "/forgot_password",
       element: <ForgotPassword />,
     },
+    //Invoice Templates
+    {
+      path: "/templates/template1",
+      element: <Template1 />,
+    },
     // delete after final build
     {
       path: "/testing",
-      element: <FileUploader />,
+      element: <Testing />,
     },
   ]);
   return <RouterProvider router={router} />;
 }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <React.StrictMode>
-    <Root />
-  </React.StrictMode>
-);
+root.render(<Root />);

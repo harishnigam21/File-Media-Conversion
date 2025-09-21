@@ -30,9 +30,27 @@ model GuestUser {
 }
 
 model PaidUser {
-  id    Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
-  email String @unique(map: "email_UNIQUE") @db.VarChar(128)
-  plan  String @db.VarChar(128)
-  used  Int?
-  max   Int?
+  id                 Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  email              String @unique(map: "email_UNIQUE") @db.VarChar(128)
+  plan_id            Int
+  used               Int?
+  max                Int
+  maxSize            Int
+  maxBatch           String @db.VarChar(45)
+  start_date         String @db.VarChar(45)
+  end_date           String @db.VarChar(45)
+  conversion_allowed String @db.LongText
+}
+
+model Plans {
+  id             Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  name           String @db.VarChar(128)
+  price          Float  @db.Float
+  description    String @db.LongText
+  maxConversions Int
+  maxFileSizeMB  Int
+  batchLimit     Int
+  support        String @db.LongText
+  formats        String @db.LongText
+  advantages     String @db.LongText
 }

@@ -78,19 +78,19 @@ const userEntry = async (req, res) => {
       return res.status(200).json({ message: "all checked cleared" });
     }
 
-    if (
-      tempUser.used === tempUser.max ||
-      planExist.used === planExist.max ||
-      planExist.used !== tempUser.used ||
-      planExist.max !== tempUser.max
-    ) {
+    if (tempUser.used === tempUser.max || planExist.used === planExist.max) {
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
         lastDBValue: { used: planExist.used, max: planExist.max },
       });
     }
-
+    if (planExist.used !== tempUser.used || planExist.max !== tempUser.max) {
+      return res.status(406).json({
+        message: "This Kind of request is not acceptable, please try again",
+        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
+      });
+    }
     const updateUser = await prisma.paidUser.update({
       where: { id: planExist.id },
       data: {
@@ -136,13 +136,20 @@ const userEntry = async (req, res) => {
     }
     if (
       tempUser.used === tempUser.max ||
-      ExistingUser.used === ExistingUser.max ||
-      ExistingUser.used !== tempUser.used ||
-      ExistingUser.max !== tempUser.used
+      ExistingUser.used === ExistingUser.max
     ) {
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
+        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
+      });
+    }
+    if (
+      ExistingUser.used !== tempUser.used ||
+      ExistingUser.max !== tempUser.max
+    ) {
+      return res.status(406).json({
+        message: "This Kind of request is not acceptable, please try again",
         lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
       });
     }

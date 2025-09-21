@@ -18,15 +18,15 @@ export default function Home({
   const category = Nav().filter((item) => item.name === "Converters")[0]
     .submenu;
   const [faq, setFAQ] = useState(FAQ());
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState([]);
   const [inputFormat, setInputFormat] = useState("pdf");
   const [outputFormat, setOutputFormat] = useState("pdf");
   const [downloadUrl, setDownloadUrl] = useState("");
   const messageRef = useRef(null);
   const navigate = useNavigate();
-
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    setFile([]);
+    setFile((prev) => [...prev, e.target.files[0]]);
     setDownloadUrl("");
   };
   const handleSubmit = async (e) => {
@@ -38,7 +38,7 @@ export default function Home({
     }
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", file[0]);
     formData.append("inputFormat", inputFormat);
     formData.append("outputFormat", outputFormat);
 
@@ -59,7 +59,13 @@ export default function Home({
         if (response.status === 421) {
           setLimitExceeded(true);
           setTempUser({
-            used: data.lastDBValue.max,
+            used: data.lastDBValue.used,
+            max: data.lastDBValue.max,
+          });
+        }
+        if (response.status === 406) {
+          setTempUser({
+            used: data.lastDBValue.used,
             max: data.lastDBValue.max,
           });
         }
@@ -125,7 +131,44 @@ export default function Home({
               </Link>
             </article>
           ) : (
-            <article className="flex flex-col items-center gap-4">
+            <article
+              className="flex flex-col items-center gap-4"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.add(
+                  "border-4",
+                  "border-dashed",
+                  "border-green-500"
+                );
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove(
+                  "border-4",
+                  "border-dashed",
+                  "border-green-500"
+                );
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove(
+                  "border-4",
+                  "border-dashed",
+                  "border-green-500"
+                );
+
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  const droppedFile = e.dataTransfer.files[0];
+                  setFile([]);
+                  setFile((prev) => [...prev, droppedFile]);
+                  setDownloadUrl("");
+                  e.dataTransfer.clearData();
+                }
+              }}
+            >
               <FiUpload className="text-5xl text-primary" />
               <p className="text-white">Drag your files here or upload</p>
               <div className="flex relative w-full text-secondary1 justify-center items-center">
@@ -133,13 +176,28 @@ export default function Home({
                 <p className="absolute border-t-2 w-1/2 border-black"></p>
               </div>
               <article className="flex flex-wrap gap-4 justify-center items-center shrink">
+                <label
+                  htmlFor="chooseFile"
+                  className={`${
+                    file.length > 0 ? "bg-green-300" : "bg-gray-400"
+                  } rounded-md flex flex-col p-4 w-full xsm:w-fit hover:bg-gray-300 cursor-pointer`}
+                >
+                  {file.length > 0 ? (
+                    file.map((f, index) => (
+                      <p key={`file/${index}`}>{f.name}</p>
+                    ))
+                  ) : (
+                    <p>Choose File</p>
+                  )}
+                </label>
                 <input
                   id="chooseFile"
                   name="chooseFile"
                   type="file"
                   accept={`.${inputFormat}`}
                   onChange={handleFileChange}
-                  className="py-2 px-4 rounded-md bg-secondary1 cursor-pointer w-full shrink"
+                  multiple
+                  className="hidden p-2 rounded-md bg-secondary1 cursor-pointer w-full shrink"
                 />
                 <button
                   onClick={(e) => handleSubmit(e)}
