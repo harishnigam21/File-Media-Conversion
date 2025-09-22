@@ -62,12 +62,17 @@ const signIn = async (req, res) => {
       maxAge: 5 * 60 * 60 * 1000,
     });
 
+    const ExistingPlan = await prisma.paidUser.findUnique({
+      where: { email: validUser.email },
+    });
+
     console.log("Successfully Updated token for your session");
     console.log("Successfully Logged In");
     return res.status(200).json({
       message: "Successfully Logged In",
       accessToken: accessToken,
       encryptedEmail: encryptedEmail,
+      planDetails: ExistingPlan ? ExistingPlan : false,
     });
   } catch (error) {
     console.log(error);

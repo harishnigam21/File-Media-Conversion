@@ -51,6 +51,15 @@ export default function SignIn() {
         }
         errorRef.current.style.color = "green";
         errorRef.current.textContent = data.message;
+        data.planDetails &&
+          window.localStorage.setItem(
+            "tempUser",
+            JSON.stringify({
+              used: data.planDetails.used,
+              max: data.planDetails.max,
+              maxSize: data.planDetails.maxSize,
+            })
+          );
         setTimeout(() => {
           navigate(`/${data.encryptedEmail}/home`, { replace: true });
         }, 2000);

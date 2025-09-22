@@ -1,7 +1,9 @@
 import CloudConvert from "cloudconvert";
 export const convertFile = async (req, res) => {
   try {
-    const cloudConvert = new CloudConvert(process.env.CLOUDCONVERT_API_TESTING_KEY);
+    const cloudConvert = new CloudConvert(
+      process.env.CLOUDCONVERT_API_TESTING_KEY
+    );
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
@@ -9,6 +11,9 @@ export const convertFile = async (req, res) => {
     if (!outputFormat) {
       return res.status(400).json({ message: "Missing outputFormat" });
     }
+
+    return res.status(200).json({ message: "short circuit" }); //TODO : Delete this line after testing
+
     const job = await cloudConvert.jobs.create({
       tasks: {
         "import-my-file": { operation: "import/upload" },

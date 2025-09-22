@@ -61,12 +61,14 @@ export default function Home({
           setTempUser({
             used: data.lastDBValue.used,
             max: data.lastDBValue.max,
+            maxSize: data.lastDBValue.maxSize,
           });
         }
         if (response.status === 406) {
           setTempUser({
             used: data.lastDBValue.used,
             max: data.lastDBValue.max,
+            maxSize: data.lastDBValue.maxSize,
           });
         }
         if (response.status === 401) {

@@ -1,7 +1,18 @@
 const prisma = require("../shortcut/prisma_initilization");
+const getDate = require("../utils/usefulFunction/returnDate");
 const userEntry = async (req, res) => {
   const { fingerprint, tempUser, params } = req.body;
   const ip = req.ip;
+
+  const getTrialPlan = await prisma.plans.findUnique({
+    where: { name: "Trial" },
+  });
+  if (!getTrialPlan) {
+    return res
+      .status(404)
+      .json({ message: "Currently this plan is not available" });
+  }
+
   const paidUser = async () => {
     const cookies = req.cookies;
     if (!cookies && cookies.jwt) {
@@ -24,39 +35,53 @@ const userEntry = async (req, res) => {
         where: { fingerprint: fingerprint },
       });
       if (!checkInGuest) {
-        const updateUser = await prisma.paidUser.create({
+        const createPaidUser = await prisma.paidUser.create({
           data: {
             email: ExistingUser.email,
-            plan: "trial",
+            plan_id: getTrialPlan.id,
             used: 1,
-            max: tempUser.max,
+            max: getTrialPlan.maxConversions,
+            maxSize: getTrialPlan.maxFileSizeMB,
+            maxBatch: getTrialPlan.batchLimit,
+            start_date: getDate(0),
+            end_date: getDate(7),
+            conversion_allowed: getTrialPlan.formats,
           },
         });
-        if (!updateUser) {
-          console.log("Failed to update Paid User Data");
+        if (!createPaidUser) {
+          console.log("Failed to create Paid User Data");
           return res.status(503).json({
             message:
               "Currently service is unavailable, please try later after sometime",
           });
         }
-        console.log("Successfully updated paid User data");
+        console.log("Successfully created paid User data");
         return res.status(200).json({
-          message: "Successfully updated paid User data",
+          message: "Successfully created paid User data",
         });
       }
       if (checkInGuest.used === checkInGuest.max) {
         console.log("Your free trial ended && you don't have any plan yet");
         return res.status(421).json({
           message: "Your free trial ended && you don't have any plan yet",
-          lastDBValue: { used: checkInGuest.used, max: checkInGuest.max },
+          lastDBValue: {
+            used: checkInGuest.used,
+            max: checkInGuest.max,
+            maxSize: checkInGuest.maxSize,
+          },
         });
       }
       const updateUser = await prisma.paidUser.create({
         data: {
           email: ExistingUser.email,
-          plan: "trial",
+          plan_id: getTrialPlan.id,
           used: checkInGuest.used + 1,
-          max: checkInGuest.max,
+          max: getTrialPlan.maxConversions,
+          maxSize: getTrialPlan.maxFileSizeMB,
+          maxBatch: getTrialPlan.batchLimit,
+          start_date: getDate(0),
+          end_date: getDate(7),
+          conversion_allowed: getTrialPlan.formats,
         },
       });
       const alsoUpdateCheckInGuest = await prisma.guestUser.update({
@@ -82,13 +107,21 @@ const userEntry = async (req, res) => {
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
-        lastDBValue: { used: planExist.used, max: planExist.max },
+        lastDBValue: {
+          used: planExist.used,
+          max: planExist.max,
+          maxSize: planExist.maxSize,
+        },
       });
     }
     if (planExist.used !== tempUser.used || planExist.max !== tempUser.max) {
       return res.status(406).json({
         message: "This Kind of request is not acceptable, please try again",
-        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
+        lastDBValue: {
+          used: planExist.used,
+          max: planExist.max,
+          maxSize: planExist.maxSize,
+        },
       });
     }
     const updateUser = await prisma.paidUser.update({
@@ -98,12 +131,65 @@ const userEntry = async (req, res) => {
       },
     });
     if (!updateUser) {
-      console.log("Failed to update Guest User Data");
+      console.log("Failed to update paid User Data");
       return res.status(503).json({
         message:
           "Currently service is unavailable, please try later after sometime",
       });
     }
+
+    //TODO : Make it proper later, currently when user login and if he not used it trial as guest there will be no entry and after using free trial in login and then using trial without login, he can use trial both time, this is not excepted. At other side when user completed its trial without login and then log in then it is not allowed after login, also if he used half trial that record is copied when he is login so no extra trial's and when he login both guest and login uses increases in parallel, due to which there will be no extra trial.
+    const alsoGuestUser = await prisma.guestUser.findUnique({
+      where: { fingerprint: fingerprint },
+    });
+    if (!alsoGuestUser) {
+      const createGuestUser = await prisma.guestUser.create({
+        data: {
+          ip: ip,
+          used: planExist.used + 1,
+          max: getTrialPlan.maxConversions,
+          maxSize: getTrialPlan.maxFileSizeMB,
+          fingerprint: fingerprint,
+          startDate: getDate(),
+        },
+      });
+      if (!createGuestUser) {
+        return res.status(503).json({
+          message:
+            "Currently service is unavailable, please try later after sometime",
+        });
+      }
+      console.log(
+        "Successfully created Guest User, simultaneously with paid User"
+      );
+      return res.status(200).json({
+        message:
+          "Successfully created Guest User, simultaneously with paid User",
+      });
+    }
+    if (alsoGuestUser.used < alsoGuestUser.max) {
+      const updateGuestUser = await prisma.guestUser.update({
+        where: { id: alsoGuestUser.id },
+        data: {
+          ip: ip,
+          used: alsoGuestUser.used + 1,
+        },
+      });
+      if (!updateGuestUser) {
+        return res.status(503).json({
+          message:
+            "Currently service is unavailable, please try later after sometime",
+        });
+      }
+      console.log(
+        "Successfully updated Guest User along with its current plan subscription"
+      );
+      return res.status(200).json({
+        message:
+          "Successfully updated Guest User along with its current plan subscription",
+      });
+    }
+
     console.log("Successfully updated Paid User uses");
     return res
       .status(200)
@@ -117,13 +203,15 @@ const userEntry = async (req, res) => {
       const createGuestUser = await prisma.guestUser.create({
         data: {
           ip: ip,
-          used: tempUser.used + 1,
-          max: tempUser.max,
+          used: 1,
+          max: getTrialPlan.maxConversions,
+          maxSize: getTrialPlan.maxFileSizeMB,
           fingerprint: fingerprint,
+          startDate: getDate(0),
         },
       });
       if (!createGuestUser) {
-        console.log("Failed to catch Guest User Data");
+        console.log("Failed to create Guest User");
         return res.status(503).json({
           message:
             "Currently service is unavailable, please try later after sometime",
@@ -141,7 +229,11 @@ const userEntry = async (req, res) => {
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
-        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
+        lastDBValue: {
+          used: ExistingUser.used,
+          max: ExistingUser.max,
+          maxSize: ExistingUser.maxSize,
+        },
       });
     }
     if (
@@ -150,7 +242,11 @@ const userEntry = async (req, res) => {
     ) {
       return res.status(406).json({
         message: "This Kind of request is not acceptable, please try again",
-        lastDBValue: { used: ExistingUser.used, max: ExistingUser.max },
+        lastDBValue: {
+          used: ExistingUser.used,
+          max: ExistingUser.max,
+          maxSize: ExistingUser.maxSize,
+        },
       });
     }
     const updateUser = await prisma.guestUser.update({

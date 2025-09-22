@@ -12,7 +12,7 @@ function App() {
   const [fingerprint, setFingerprint] = useState(null);
   const [tempUser, setTempUser] = useState(() => {
     const saved = window.localStorage.getItem("tempUser");
-    return saved ? JSON.parse(saved) : { used: 0, max: 2 };
+    return saved ? JSON.parse(saved) : { used: 0, max: 3, maxSize: 5 };
   });
   const [limitExceeded, setLimitExceeded] = useState(() => {
     const saved = window.localStorage.getItem("tempUser");
@@ -39,7 +39,7 @@ function App() {
         setFingerprint(result.visitorId);
       });
     });
-    // solve this problem later
+    //TODO : solve this problem later
     // if (params.email) {
     //   if (params.email !== emailCookie) {
     //     alert("Your session has been expired, please SignIn again.");
