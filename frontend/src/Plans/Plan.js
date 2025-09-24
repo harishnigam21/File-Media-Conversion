@@ -1,19 +1,126 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Plans from "../assets/Site_Details/Secondary/plan";
 import { MdDelete } from "react-icons/md";
 import { FaArrowAltCircleLeft } from "react-icons/fa";
+import { ImCross } from "react-icons/im";
+import siteInfo from "../assets/Site_Details/Primary/siteInfo";
 export default function Plan() {
   const navigate = useNavigate();
   const plans = Plans();
-  console.log(plans);
   const [choosePlan, setChoosePlan] = useState({});
+  const [showCart, setShowCart] = useState(false);
+  const errorRef = useRef(null);
+  const handlePurchase = async (e) => {
+    e.currentTarget?.childNodes[1].classList.remove("hidden");
+    try {
+      //get key
+      const getKeyUrl = `${process.env.REACT_APP_BACKEND_HOST}/getKey`;
+      const KeyResponse = await fetch(getKeyUrl, {
+        method: "GET",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+      });
+      const KeyData = await KeyResponse.json();
+      if (!KeyResponse.ok) {
+        e.currentTarget?.childNodes[1].classList.add("hidden");
+        console.log(KeyData);
+        errorRef.current.style.color = "red";
+        errorRef.current.textContent = KeyData.message;
+        return;
+      }
+      console.log(KeyData.message);
+      errorRef.current.style.color = "green";
+      errorRef.current.textContent = KeyData.message;
+
+      //get Plan details
+      const getPlanDetailsUrl = `${process.env.REACT_APP_BACKEND_HOST}/get_unique_plan`;
+      const PlanDetailsResponse = await fetch(getPlanDetailsUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: choosePlan.id }),
+        credentials: "include",
+      });
+      const PlanDetailsData = await PlanDetailsResponse.json();
+      if (!PlanDetailsResponse.ok) {
+        e.currentTarget?.childNodes[1].classList.add("hidden");
+        console.log(PlanDetailsData);
+        errorRef.current.style.color = "red";
+        errorRef.current.textContent = PlanDetailsData.message;
+        return;
+      }
+      console.log(PlanDetailsData.message);
+      errorRef.current.style.color = "green";
+      errorRef.current.textContent = PlanDetailsData.message;
+
+      //create Order
+      const createOrderUrl = `${process.env.REACT_APP_BACKEND_HOST}/createOrder`;
+      const createOrderResponse = await fetch(createOrderUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ amount: PlanDetailsData.plans.price }),
+        credentials: "include",
+      });
+      const createOrderData = await createOrderResponse.json();
+      if (!createOrderResponse.ok) {
+        e.currentTarget?.childNodes[1].classList.add("hidden");
+        console.log(createOrderData);
+        errorRef.current.style.color = "red";
+        errorRef.current.textContent = createOrderData.message;
+        return;
+      }
+      console.log(createOrderData.message);
+      errorRef.current.style.color = "green";
+      errorRef.current.textContent = createOrderData.message;
+
+      //make payment
+      const options = {
+        key: KeyData.key,
+        amount: parseInt(PlanDetailsData.plans.price) * 100,
+        currency: "INR",
+        name: "FileFlip",
+        description: "Test Transaction",
+        image: siteInfo().logo,
+        order_id: createOrderData.id,
+        handler: function (response) {
+          console.log("Response from Razorpay handler:", response);
+          fetch(`${process.env.REACT_APP_BACKEND_HOST}/verify_payment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log("Payment verification response:", data);
+            })
+            .catch((error) => {
+              console.error("Error verifying payment:", error);
+            });
+        },
+        notes: {
+          address: "Razorpay Corporate Office",
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      e.currentTarget?.childNodes[1].classList.add("hidden");
+      console.log(error);
+      errorRef.current.style.color = "red";
+      errorRef.current.textContent = error.message;
+    }
+  };
   return !plans ? (
-    <h1>Text it later</h1>
+    <h1 className="text-center text-red-500 text-3xl font-georgia">
+      Text it later
+    </h1>
   ) : (
-    <section className="w-screen min-h-screen p-2 xsm:p-8 flex flex-col gap-8">
+    <section className="w-screen h-screen overflow-scroll noscrollbar p-2 xsm:p-8 flex flex-col gap-8">
       <p
-        className="flex items-center gap-2 absolute"
+        className="flex items-center gap-2"
         onClick={() => {
           navigate(-1);
         }}
@@ -28,8 +135,8 @@ export default function Plan() {
           <h1 className="flex basis-full text-xl">Trial Plan</h1>
           {plans.trial.map((item, index) => (
             <article
-              key={`plan/monthly/${index}`}
-              className="border-2 py-4 px-12 rounded-lg flex flex-col gap-2 shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between"
+              key={`plan/trial/${index}`}
+              className="border-2 py-4 px-12 rounded-lg flex flex-col gap-2 shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between md:w-[45%] lg:w-[30%]"
             >
               <div className="flex justify-between items-center text-xl">
                 <strong>{item.name}</strong>
@@ -56,7 +163,7 @@ export default function Plan() {
                 <strong>Formats : </strong>
                 <ol className="flex flex-col gap-2 pl-4 list-disc list-inside">
                   {JSON.parse(item.formats).map((item, index) => (
-                    <li key={`plan/monthly/formats/${index}`}>{item}</li>
+                    <li key={`plan/trial/formats/${index}`}>{item}</li>
                   ))}
                 </ol>
               </div>
@@ -64,7 +171,7 @@ export default function Plan() {
                 <strong>Advantages : </strong>
                 <ol className="flex flex-col gap-2 pl-4 list-disc list-inside">
                   {JSON.parse(item.advantages).map((item, index) => (
-                    <li key={`plan/monthly/advantages/${index}`}>{item}</li>
+                    <li key={`plan/trial/advantages/${index}`}>{item}</li>
                   ))}
                 </ol>
               </div>
@@ -72,16 +179,19 @@ export default function Plan() {
                 <button
                   disabled={choosePlan.id ? true : false}
                   className="px-8 py-2 bg-primary rounded-md text-white"
-                  onClick={() =>
-                    setChoosePlan({ plan: "monthly", id: item.id })
-                  }
+                  onClick={(e) => {
+                    e.target.textContent = "Selected";
+                    setChoosePlan(item);
+                  }}
                 >
-                  Buy
+                  Select
                 </button>
                 {choosePlan.id === item.id && (
                   <MdDelete
                     className="text-2xl text-red-600 cursor-pointer"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.currentTarget.parentElement.childNodes[0].textContent =
+                        "Select";
                       setChoosePlan({});
                     }}
                   />
@@ -97,7 +207,7 @@ export default function Plan() {
         {plans.monthly.map((item, index) => (
           <article
             key={`plan/monthly/${index}`}
-            className="border-2 p-4 rounded-lg flex flex-col gap-2 grow shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between"
+            className="border-2 p-4 rounded-lg flex flex-col gap-2 grow shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between md:w-[45%] lg:w-[30%]"
           >
             <div className="flex justify-between items-center text-xl">
               <strong>{item.name}</strong>
@@ -140,14 +250,19 @@ export default function Plan() {
               <button
                 disabled={choosePlan.id ? true : false}
                 className="px-8 py-2 bg-primary rounded-md text-white"
-                onClick={() => setChoosePlan({ plan: "monthly", id: item.id })}
+                onClick={(e) => {
+                  e.target.textContent = "Selected";
+                  setChoosePlan(item);
+                }}
               >
-                Buy
+                Select
               </button>
               {choosePlan.id === item.id && (
                 <MdDelete
                   className="text-2xl text-red-600 cursor-pointer"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.currentTarget.parentElement.childNodes[0].textContent =
+                      "Select";
                     setChoosePlan({});
                   }}
                 />
@@ -163,7 +278,7 @@ export default function Plan() {
         {plans.yearly.map((item, index) => (
           <article
             key={`plan/yearly/${index}`}
-            className="border-2 p-4 rounded-lg flex flex-col gap-2 grow shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between"
+            className="border-2 p-4 rounded-lg flex flex-col gap-2 grow shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between md:w-[45%] lg:w-[30%]"
           >
             <div className="flex justify-between items-center text-xl">
               <strong>{item.name}</strong>
@@ -206,14 +321,19 @@ export default function Plan() {
               <button
                 disabled={choosePlan.id ? true : false}
                 className="px-8 py-2 bg-primary rounded-md text-white"
-                onClick={() => setChoosePlan({ plan: "yearly", id: item.id })}
+                onClick={(e) => {
+                  e.target.textContent = "Selected";
+                  setChoosePlan(item);
+                }}
               >
-                Buy
+                Select
               </button>
               {choosePlan.id === item.id && (
                 <MdDelete
                   className="text-2xl text-red-600 cursor-pointer"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.currentTarget.parentElement.childNodes[0].textContent =
+                      "Select";
                     setChoosePlan({});
                   }}
                 />
@@ -231,7 +351,7 @@ export default function Plan() {
             key={`plan/unlimited/${index}`}
             className={`border-2 p-4 rounded-lg flex flex-col ${
               plans.unlimited.length > 1 && "grow"
-            } gap-2 shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between`}
+            } gap-2 shadow-[0.1rem_0.1rem_1rem_0.1rem_gray_inset] justify-between md:w-[45%] lg:w-[30%]`}
           >
             <div className="flex justify-between items-center text-xl">
               <strong>{item.name}</strong>
@@ -244,15 +364,15 @@ export default function Plan() {
             }`}</p>
             <span className="flex gap-2">
               <strong>Max Conversion : </strong>
-              <p>{item.maxConversions}</p>
+              <p>{item.maxConversions === 0 ? "unlimited" : "..."}</p>
             </span>
             <span className="flex gap-2">
               <strong>Max FileSize (MB) : </strong>
-              <p>{item.maxFileSizeMB}</p>
+              <p>{item.maxFileSizeMB === 0 ? "unlimited" : "..."}</p>
             </span>
             <span className="flex gap-2">
               <strong>Batch Limit : </strong>
-              <p>{item.batchLimit}</p>
+              <p>{item.batchLimit === 0 ? "unlimited" : "..."}</p>
             </span>
             <span className="flex gap-2">
               <strong>Support : </strong>
@@ -278,16 +398,19 @@ export default function Plan() {
               <button
                 disabled={choosePlan.id ? true : false}
                 className="px-8 py-2 bg-primary rounded-md text-white"
-                onClick={() =>
-                  setChoosePlan({ plan: "unlimited", id: item.id })
-                }
+                onClick={(e) => {
+                  e.target.textContent = "Selected";
+                  setChoosePlan(item);
+                }}
               >
-                Buy
+                Select
               </button>
               {choosePlan.id === item.id && (
                 <MdDelete
                   className="text-2xl text-red-600 cursor-pointer"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.currentTarget.parentElement.childNodes[0].textContent =
+                      "Select";
                     setChoosePlan({});
                   }}
                 />
@@ -296,6 +419,59 @@ export default function Plan() {
           </article>
         ))}
       </article>
+
+      {/* type of add to cart */}
+      {showCart && (
+        <article className="absolute top-0 right-0 z-10 w-[75%] md:w-1/3 lg:w-1/4 h-screen bg-gray-300 p-4 flex flex-col gap-4">
+          <h1>Overview :-</h1>
+          <article className="flex flex-col h-full">
+            <ImCross
+              className="absolute top-2 right-2 text-red-500 text-2xl cursor-pointer"
+              onClick={() => setShowCart(false)}
+            />
+            <p>Plan Name : {choosePlan.name}</p>
+            <p>
+              Max Conversion :{" "}
+              {choosePlan.maxConversions === 0
+                ? "unlimited"
+                : choosePlan.maxConversions}
+            </p>
+            <p>
+              Max File Size (MB) :{" "}
+              {choosePlan.maxFileSizeMB === 0
+                ? "unlimited"
+                : choosePlan.maxFileSizeMB}
+            </p>
+            <p>
+              Batch Limit :{" "}
+              {choosePlan.batchLimit === 0
+                ? "unlimited"
+                : choosePlan.batchLimit}
+            </p>
+            <div className="absolute bottom-0 self-center p-2">
+              <button
+                className="px-8 py-2 rounded-md bg-blue-600 text-white flex gap-2"
+                onClick={(e) => handlePurchase(e)}
+              >
+                <p>Buy Now</p>
+                <p className="hidden w-5 h-5 self-center aspect-square rounded-full border-4 border-l-violet-500 border-r-green-500 border-b-orange-600 border-t-red-500 animate-[spin_0.3s_linear_infinite]"></p>
+              </button>
+              <p className="text-red-500" ref={errorRef}></p>
+            </div>
+          </article>
+        </article>
+      )}
+      {choosePlan.id && (
+        <article className="absolute bottom-0 right-0 z-[2]">
+          <div
+            className="px-8 py-2 bg-blue-600 rounded-l-md text-white flex gap-4 cursor-pointer"
+            onClick={() => setShowCart(true)}
+          >
+            Proceed
+            <span className="animate-[fromLeft_1s_infinite_ease]">{">>>"}</span>
+          </div>
+        </article>
+      )}
     </section>
   );
 }

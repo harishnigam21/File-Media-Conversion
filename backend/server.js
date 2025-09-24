@@ -21,6 +21,7 @@ app.use("/api", require("./routes/convertRoutes"));
 app.use("/", require("./routes/Auth"));
 app.use("/", require("./routes/UserEntry"));
 app.use("/", require("./routes/Plan"));
+app.use("/", require("./routes/Payment"));
 
 app.get("/", (req, res) => {
   res.send("Welcome to conversion Backend Server");

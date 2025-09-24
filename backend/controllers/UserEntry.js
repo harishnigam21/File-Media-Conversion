@@ -8,6 +8,7 @@ const userEntry = async (req, res) => {
     where: { name: "Trial" },
   });
   if (!getTrialPlan) {
+    console.log("Currently, Trial plan is not available");
     return res
       .status(404)
       .json({ message: "Currently this plan is not available" });
@@ -16,6 +17,7 @@ const userEntry = async (req, res) => {
   const paidUser = async () => {
     const cookies = req.cookies;
     if (!cookies && cookies.jwt) {
+      console.log("Missing Cookies");
       return res.status(404).json({ message: "Missing Cookies" });
     }
     const jwt = cookies.jwt;
@@ -23,6 +25,7 @@ const userEntry = async (req, res) => {
       where: { reference_token: jwt },
     });
     if (!ExistingUser) {
+      console.log("Unknown User");
       return res
         .status(401)
         .json({ message: "You are authorized to use this service" });
@@ -104,6 +107,9 @@ const userEntry = async (req, res) => {
     }
 
     if (tempUser.used === tempUser.max || planExist.used === planExist.max) {
+      console.log(
+        "Your free trial completed, please choose plan and proceed again"
+      );
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
@@ -115,6 +121,7 @@ const userEntry = async (req, res) => {
       });
     }
     if (planExist.used !== tempUser.used || planExist.max !== tempUser.max) {
+      console.log("This Kind of request is not acceptable, please try again");
       return res.status(406).json({
         message: "This Kind of request is not acceptable, please try again",
         lastDBValue: {
@@ -154,6 +161,9 @@ const userEntry = async (req, res) => {
         },
       });
       if (!createGuestUser) {
+        console.log(
+          "Currently service is unavailable, please try later after sometime"
+        );
         return res.status(503).json({
           message:
             "Currently service is unavailable, please try later after sometime",
@@ -176,6 +186,9 @@ const userEntry = async (req, res) => {
         },
       });
       if (!updateGuestUser) {
+        console.log(
+          "Currently service is unavailable, please try later after sometime"
+        );
         return res.status(503).json({
           message:
             "Currently service is unavailable, please try later after sometime",
@@ -226,6 +239,9 @@ const userEntry = async (req, res) => {
       tempUser.used === tempUser.max ||
       ExistingUser.used === ExistingUser.max
     ) {
+      console.log(
+        '"Your free trial completed, please choose plan and proceed again'
+      );
       return res.status(421).json({
         message:
           "Your free trial completed, please choose plan and proceed again",
@@ -240,6 +256,7 @@ const userEntry = async (req, res) => {
       ExistingUser.used !== tempUser.used ||
       ExistingUser.max !== tempUser.max
     ) {
+      console.log("This Kind of request is not acceptable, please try again");
       return res.status(406).json({
         message: "This Kind of request is not acceptable, please try again",
         lastDBValue: {

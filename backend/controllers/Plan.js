@@ -14,6 +14,31 @@ const GetPlan = async (req, res) => {
     .status(200)
     .json({ message: "Successfully got all plans", plans: plans });
 };
+const GetUniquePlan = async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(404).json({ message: "missing plan id" });
+  }
+  try {
+    const plans = await prisma.plans.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!plans) {
+      console.log("Currently, we don't have any plan yet");
+      return res
+        .status(404)
+        .json({ message: "Currently, we don't have any plan yet" });
+    }
+
+    console.log("Successfully got all plans");
+    return res
+      .status(200)
+      .json({ message: "Successfully got all plans", plans: plans });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
 const BuyPlan = async (req, res) => {
   const { id, name, payment } = req.body; //payment should be an object that contain status, payment id, and other details
 
@@ -21,6 +46,7 @@ const BuyPlan = async (req, res) => {
     try {
       const cookies = req.cookies;
       if (!cookies || cookies.jwt) {
+        console.log("Missing Important Cookie's");
         return res.status(404).json({ message: "Missing Important Cookie's" });
       }
       const ExistingUser = await prisma.users.findUnique({
@@ -38,6 +64,7 @@ const BuyPlan = async (req, res) => {
           where: { id: id, name: name },
         });
         if (!planAvailability) {
+          console.log("Sorry, Currently this plan is not available");
           return res
             .status(404)
             .json({ message: "Sorry, Currently this plan is not available" });
@@ -69,6 +96,7 @@ const BuyPlan = async (req, res) => {
               "Currently service is unavailable, please try later after sometime",
           });
         }
+        console.log("Successfully Purchased plan");
         return res.status(200).json({
           message: "Successfully Purchased plan",
           plandetails: {
@@ -79,6 +107,8 @@ const BuyPlan = async (req, res) => {
           },
         });
       }
+
+      // TODO : if plan exist
     } catch (error) {
       console.log(error);
       return res.status(500).json({
@@ -100,4 +130,4 @@ const BuyPlan = async (req, res) => {
     return res.status(500).json(error.message);
   }
 };
-module.exports = { BuyPlan, GetPlan };
+module.exports = { BuyPlan, GetPlan, GetUniquePlan };
