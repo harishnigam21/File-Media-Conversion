@@ -40,17 +40,16 @@ const GetUniquePlan = async (req, res) => {
   }
 };
 const BuyPlan = async (req, res) => {
-  const { id, name, payment } = req.body; //payment should be an object that contain status, payment id, and other details
+  const { id, payment, jwt } = req.body; //payment should be an object that contain status, payment id, and other details
 
   const paymentSuccess = async () => {
     try {
-      const cookies = req.cookies;
-      if (!cookies || cookies.jwt) {
+      if (!jwt) {
         console.log("Missing Important Cookie's");
         return res.status(404).json({ message: "Missing Important Cookie's" });
       }
       const ExistingUser = await prisma.users.findUnique({
-        where: { reference_token: cookies.jwt },
+        where: { reference_token: jwt },
       });
       if (!ExistingUser) {
         console.log("Unknown User");
@@ -61,7 +60,7 @@ const BuyPlan = async (req, res) => {
       });
       if (!PlanExist) {
         const planAvailability = await prisma.plans.findUnique({
-          where: { id: id, name: name },
+          where: { id: id },
         });
         if (!planAvailability) {
           console.log("Sorry, Currently this plan is not available");
@@ -87,6 +86,7 @@ const BuyPlan = async (req, res) => {
                 ? 10 * 365
                 : 0
             ),
+            conversion_allowed: planAvailability.formats,
           },
         });
         if (!createNewPaidUser) {
@@ -102,7 +102,7 @@ const BuyPlan = async (req, res) => {
           plandetails: {
             used: 0,
             max: planAvailability.maxConversions,
-            size: planAvailability.maxFileSizeMB,
+            maxSize: planAvailability.maxFileSizeMB,
             formatAllowed: planAvailability.formats,
           },
         });
@@ -124,7 +124,7 @@ const BuyPlan = async (req, res) => {
       .json({ message: "Your payment is failed, please try again later" });
   };
   try {
-    payment.status ? paymentSuccess : paymentFailed;
+    payment ? paymentSuccess() : paymentFailed();
   } catch (error) {
     console.log(error);
     return res.status(500).json(error.message);

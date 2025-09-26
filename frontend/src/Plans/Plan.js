@@ -64,11 +64,12 @@ export default function Plan() {
       const createOrderData = await createOrderResponse.json();
       if (!createOrderResponse.ok) {
         e.currentTarget?.childNodes[1].classList.add("hidden");
-        console.log(createOrderData);
+        console.log(createOrderData.message);
         errorRef.current.style.color = "red";
         errorRef.current.textContent = createOrderData.message;
         return;
       }
+
       console.log(createOrderData.message);
       errorRef.current.style.color = "green";
       errorRef.current.textContent = createOrderData.message;
@@ -81,21 +82,45 @@ export default function Plan() {
         name: "FileFlip",
         description: "Test Transaction",
         image: siteInfo().logo,
-        order_id: createOrderData.id,
-        handler: function (response) {
-          console.log("Response from Razorpay handler:", response);
-          fetch(`${process.env.REACT_APP_BACKEND_HOST}/verify_payment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(response),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("Payment verification response:", data);
-            })
-            .catch((error) => {
-              console.error("Error verifying payment:", error);
-            });
+        order_id: createOrderData.order.id,
+        handler: async function (response) {
+          try {
+            const verifyResponse = await fetch(
+              `${process.env.REACT_APP_BACKEND_HOST}/verify_payment`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  ...response,
+                  plan_id: PlanDetailsData.plans.id,
+                  amount_in_paise: parseInt(PlanDetailsData.plans.price) * 100,
+                }),
+                credentials: "include",
+              }
+            );
+            const verifyData = await verifyResponse.json();
+            if (!verifyResponse.ok) {
+              e.currentTarget?.childNodes[1].classList.add("hidden");
+              console.log(verifyData.message);
+              errorRef.current.style.color = "red";
+              errorRef.current.textContent = verifyData.message;
+              return;
+            }
+            e.currentTarget?.childNodes[1].classList.add("hidden");
+            console.log(verifyData.message);
+            window.localStorage.setItem("tempUser", JSON.stringify(verifyData.data));
+            errorRef.current.style.color = "green";
+            errorRef.current.textContent = verifyData.message;
+            setChoosePlan({});
+            setTimeout(() => {
+              setShowCart(false);
+            }, 2000);
+          } catch (error) {
+            e.currentTarget?.childNodes[1].classList.add("hidden");
+            console.log(error.message);
+            errorRef.current.style.color = "red";
+            errorRef.current.textContent = error.message;
+          }
         },
         notes: {
           address: "Razorpay Corporate Office",

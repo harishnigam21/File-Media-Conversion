@@ -152,7 +152,7 @@ export default function SignUp() {
           Welcome to {siteInfo().site_name}
         </h1>
         <p className="text-secondary1 tracking-wider text-center">
-          Sign Up to your FileFlip account
+          Sign Up to your {siteInfo().site_name} account
         </p>
         <form
           action=""

@@ -52,9 +52,23 @@ const getKey = async (req, res) => {
   }
 };
 const verifyPayment = async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-    req.body;
-  console.log(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    plan_id,
+  } = req.body;
+  if (
+    !razorpay_order_id ||
+    !razorpay_payment_id ||
+    !razorpay_signature ||
+    !plan_id
+  ) {
+    console.log("Incomplete Data provided by RazorPay");
+    return res
+      .status(500)
+      .json({ message: "Incomplete Data provided by RazorPay" });
+  }
 
   const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -65,17 +79,47 @@ const verifyPayment = async (req, res) => {
     .digest("hex");
 
   // Compare signatures
-  if (expectedSignature === razorpay_signature) {
-    // Payment is successful and verified.
-    // You can now update your database and fulfill the order.
-    res
-      .status(200)
-      .json({ status: "success", message: "Payment verified successfully." });
-  } else {
-    // Signature mismatch - potential fraud.
-    res
+  if (expectedSignature !== razorpay_signature) {
+    console.log("Payment verification failed.");
+    return res
       .status(400)
       .json({ status: "failure", message: "Payment verification failed." });
   }
+
+  //now payment is successful, proceed to provide service from our end
+  const provideService = async () => {
+    const url = `${process.env.BACKEND_HOST}/buy_plan`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id: plan_id,
+          payment: true,
+          jwt: req.cookies.jwt,
+        }),
+        credentials: "include",
+      });
+      const responseData = await response.json();
+      if (!response.ok) {
+        //call razorpay for refund
+        console.log(responseData.message);
+        return res
+          .status(response.status)
+          .json({ message: responseData.message });
+      }
+      console.log(responseData.message);
+      return res
+        .status(response.status)
+        .json({
+          message: responseData.message,
+          data: responseData.plandetails,
+        });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: error.message });
+    }
+  };
+  provideService();
 };
 module.exports = { createOrder, getKey, verifyPayment };
