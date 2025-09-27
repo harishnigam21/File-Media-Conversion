@@ -49,6 +49,7 @@ const userEntry = async (req, res) => {
             start_date: getDate(0),
             end_date: getDate(7),
             conversion_allowed: getTrialPlan.formats,
+            payment_id: `free-to-${ExistingUser.email}`,
           },
         });
         if (!createPaidUser) {
@@ -85,6 +86,7 @@ const userEntry = async (req, res) => {
           start_date: getDate(0),
           end_date: getDate(7),
           conversion_allowed: getTrialPlan.formats,
+          payment_id: `free-to-${ExistingUser.email}`,
         },
       });
       const alsoUpdateCheckInGuest = await prisma.guestUser.update({

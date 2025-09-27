@@ -40,8 +40,10 @@ const GetUniquePlan = async (req, res) => {
   }
 };
 const BuyPlan = async (req, res) => {
-  const { id, payment, jwt } = req.body; //payment should be an object that contain status, payment id, and other details
-
+  const { id, payment, jwt, razorpay_payment_id } = req.body; //payment should be an object that contain status, payment id, and other details
+  if ((!id, !payment, !jwt, !razorpay_payment_id)) {
+    return res.status(404).json("Missing Important data to move forward");
+  }
   const paymentSuccess = async () => {
     try {
       if (!jwt) {
@@ -58,16 +60,16 @@ const BuyPlan = async (req, res) => {
       const PlanExist = await prisma.paidUser.findUnique({
         where: { email: ExistingUser.email },
       });
+      const planAvailability = await prisma.plans.findUnique({
+        where: { id: id },
+      });
+      if (!planAvailability) {
+        console.log("Sorry, Currently this plan is not available");
+        return res
+          .status(404)
+          .json({ message: "Sorry, Currently this plan is not available" });
+      }
       if (!PlanExist) {
-        const planAvailability = await prisma.plans.findUnique({
-          where: { id: id },
-        });
-        if (!planAvailability) {
-          console.log("Sorry, Currently this plan is not available");
-          return res
-            .status(404)
-            .json({ message: "Sorry, Currently this plan is not available" });
-        }
         const createNewPaidUser = await prisma.paidUser.create({
           data: {
             email: ExistingUser.email,
@@ -86,6 +88,7 @@ const BuyPlan = async (req, res) => {
                 ? 10 * 365
                 : 0
             ),
+            payment_id: razorpay_payment_id,
             conversion_allowed: planAvailability.formats,
           },
         });
@@ -108,7 +111,45 @@ const BuyPlan = async (req, res) => {
         });
       }
 
-      // TODO : if plan exist
+      const updateNewPaidUser = await prisma.paidUser.update({
+        where: { email: ExistingUser.email },
+        data: {
+          plan_id: planAvailability.id,
+          used: 0,
+          max: planAvailability.maxConversions,
+          maxSize: planAvailability.maxFileSizeMB,
+          maxBatch: planAvailability.batchLimit,
+          start_date: getDate(0),
+          end_date: getDate(
+            planAvailability.name.toLowerCase().includes("mon")
+              ? 30
+              : planAvailability.name.toLowerCase().includes("year")
+              ? 365
+              : planAvailability.name.toLowerCase().includes("unlimited")
+              ? 10 * 365
+              : 0
+          ),
+          payment_id: razorpay_payment_id,
+          conversion_allowed: planAvailability.formats,
+        },
+      });
+      if (!updateNewPaidUser) {
+        console.log("Failed to update Paid User plan");
+        return res.status(503).json({
+          message:
+            "Currently service is unavailable, please try later after sometime",
+        });
+      }
+      console.log("Successfully Purchased plan");
+      return res.status(200).json({
+        message: "Successfully Purchased plan",
+        plandetails: {
+          used: 0,
+          max: planAvailability.maxConversions,
+          maxSize: planAvailability.maxFileSizeMB,
+          formatAllowed: planAvailability.formats,
+        },
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({

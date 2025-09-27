@@ -94,6 +94,8 @@ export default function Plan() {
                   ...response,
                   plan_id: PlanDetailsData.plans.id,
                   amount_in_paise: parseInt(PlanDetailsData.plans.price) * 100,
+                  amount_in_paise_to_refund:
+                    parseInt(PlanDetailsData.plans.price) * 100,
                 }),
                 credentials: "include",
               }
@@ -104,11 +106,16 @@ export default function Plan() {
               console.log(verifyData.message);
               errorRef.current.style.color = "red";
               errorRef.current.textContent = verifyData.message;
+              setShowCart(false);
+              alert(verifyData.message);
               return;
             }
             e.currentTarget?.childNodes[1].classList.add("hidden");
             console.log(verifyData.message);
-            window.localStorage.setItem("tempUser", JSON.stringify(verifyData.data));
+            window.localStorage.setItem(
+              "tempUser",
+              JSON.stringify(verifyData.data)
+            );
             errorRef.current.style.color = "green";
             errorRef.current.textContent = verifyData.message;
             setChoosePlan({});
@@ -120,7 +127,18 @@ export default function Plan() {
             console.log(error.message);
             errorRef.current.style.color = "red";
             errorRef.current.textContent = error.message;
+            setShowCart(false);
+            alert(error.message);
           }
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("Razorpay window closed by user.");
+            errorRef.current.style.color = "red";
+            errorRef.current.textContent =
+              "recent payment was canceled. Please try again to complete your purchase.";
+            setShowCart(false);
+          },
         },
         notes: {
           address: "Razorpay Corporate Office",

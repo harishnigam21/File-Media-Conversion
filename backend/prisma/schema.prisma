@@ -42,6 +42,7 @@ model PaidUser {
   start_date         String @db.VarChar(45)
   end_date           String @db.VarChar(45)
   conversion_allowed String @db.LongText
+  payment_id         String @unique(map: "razorpay_payment_id_UNIQUE") @db.VarChar(128)
 }
 
 model Plans {
@@ -55,4 +56,13 @@ model Plans {
   support        String @db.LongText
   formats        String @db.LongText
   advantages     String @db.LongText
+}
+
+model RefundUser {
+  id            Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  email         String @db.VarChar(128)
+  plan_id       Int
+  amount        Int
+  refund_id     String @db.VarChar(128)
+  refund_status String @db.VarChar(512)
 }
