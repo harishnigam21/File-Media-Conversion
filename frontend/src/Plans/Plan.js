@@ -93,7 +93,6 @@ export default function Plan() {
                 body: JSON.stringify({
                   ...response,
                   plan_id: PlanDetailsData.plans.id,
-                  amount_in_paise: parseInt(PlanDetailsData.plans.price) * 100,
                   amount_in_paise_to_refund:
                     parseInt(PlanDetailsData.plans.price) * 100,
                 }),
