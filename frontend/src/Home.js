@@ -253,7 +253,7 @@ export default function Home({
                     {avilableFormat.from.map((inthere, index) => (
                       <option
                         key={`from/${index}`}
-                        value={inthere.toLowerCase()}
+                        value={inthere.trim().toLowerCase()}
                       >
                         {inthere.toUpperCase()}
                       </option>
@@ -274,11 +274,23 @@ export default function Home({
                     onChange={(e) => setOutputFormat(e.target.value)}
                     className="bg-secondary1 p-2 rounded-md"
                   >
-                    {avilableFormat.to.map((inthere, index) => (
-                      <option key={`to/${index}`} value={inthere.toLowerCase()}>
-                        {inthere.toUpperCase()}
-                      </option>
-                    ))}
+                    {JSON.parse(tempUser.formatAllowed)
+                      .map((item) => item.split("->"))
+                      .map((item, index) => {
+                        if (
+                          item[0].trim().toLowerCase() ===
+                          inputFormat.toLowerCase()
+                        ) {
+                          return (
+                            <option
+                              key={`to/${index}`}
+                              value={item[1].toLowerCase()}
+                            >
+                              {item[1].toUpperCase()}
+                            </option>
+                          );
+                        }
+                      })}
                   </select>
                 </div>
               </article>
