@@ -58,6 +58,7 @@ export default function SignIn() {
               used: data.planDetails.used,
               max: data.planDetails.max,
               maxSize: data.planDetails.maxSize,
+              formatAllowed: data.planDetails.conversion_allowed,
             })
           );
         setTimeout(() => {

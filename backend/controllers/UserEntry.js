@@ -16,7 +16,7 @@ const userEntry = async (req, res) => {
 
   const paidUser = async () => {
     const cookies = req.cookies;
-    if (!cookies && cookies.jwt) {
+    if (!cookies || !cookies.jwt) {
       console.log("Missing Cookies");
       return res.status(404).json({ message: "Missing Cookies" });
     }
@@ -72,6 +72,7 @@ const userEntry = async (req, res) => {
             used: checkInGuest.used,
             max: checkInGuest.max,
             maxSize: checkInGuest.maxSize,
+            formatAllowed: getTrialPlan.formats,
           },
         });
       }
@@ -110,7 +111,7 @@ const userEntry = async (req, res) => {
 
     if (tempUser.used === tempUser.max || planExist.used === planExist.max) {
       console.log(
-        "Your free trial completed, please choose plan and proceed again"
+        "PaidUser : Your free trial completed, please choose plan and proceed again"
       );
       return res.status(421).json({
         message:
@@ -119,6 +120,7 @@ const userEntry = async (req, res) => {
           used: planExist.used,
           max: planExist.max,
           maxSize: planExist.maxSize,
+          formatAllowed: planExist.conversion_allowed,
         },
       });
     }
@@ -130,6 +132,7 @@ const userEntry = async (req, res) => {
           used: planExist.used,
           max: planExist.max,
           maxSize: planExist.maxSize,
+          formatAllowed: planExist.conversion_allowed,
         },
       });
     }
@@ -242,7 +245,7 @@ const userEntry = async (req, res) => {
       ExistingUser.used === ExistingUser.max
     ) {
       console.log(
-        '"Your free trial completed, please choose plan and proceed again'
+        "Guest User : Your free trial completed, please choose plan and proceed again"
       );
       return res.status(421).json({
         message:
@@ -251,6 +254,7 @@ const userEntry = async (req, res) => {
           used: ExistingUser.used,
           max: ExistingUser.max,
           maxSize: ExistingUser.maxSize,
+          formatAllowed: getTrialPlan.formats,
         },
       });
     }
@@ -265,6 +269,7 @@ const userEntry = async (req, res) => {
           used: ExistingUser.used,
           max: ExistingUser.max,
           maxSize: ExistingUser.maxSize,
+          formatAllowed: getTrialPlan.formats,
         },
       });
     }

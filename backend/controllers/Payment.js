@@ -180,7 +180,7 @@ const verifyPayment = async (req, res) => {
         if (!response.ok) {
           console.log(responseData.message);
 
-          //payment is successful, but you failed to provide service then call razorpay for refund, // TODO : currently the payment will be refund in any case if service not provided, either user is manipulating data, if it is so than that will be handle by razorpay
+          //payment is successful, but you failed to provide service then call razorpay for refund, // TODO : currently the payment will be refund in any case if service not provided, either user is manipulating data, if it is so than that will be handle by razorpay by checking payment id
           issueRefund();
           return;
         }

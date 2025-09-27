@@ -4,7 +4,7 @@ import Process from "./assets/Site_Details/Secondary/process";
 import Nav from "./assets/Site_Details/Primary/nav";
 import siteInfo from "./assets/Site_Details/Primary/siteInfo";
 import FAQ from "./assets/Site_Details/Secondary/faq";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 export default function Home({
   tempUses,
@@ -19,21 +19,44 @@ export default function Home({
     .submenu;
   const [faq, setFAQ] = useState(FAQ());
   const [file, setFile] = useState([]);
+  const [avilableFormat, setAvailableFormats] = useState({ from: [], to: [] });
   const [inputFormat, setInputFormat] = useState("pdf");
   const [outputFormat, setOutputFormat] = useState("pdf");
   const [downloadUrl, setDownloadUrl] = useState("");
   const messageRef = useRef(null);
   const navigate = useNavigate();
+
+  const fromTo = (index) => {
+    const temp = new Set(
+      JSON.parse(tempUser.formatAllowed)
+        .map((item) => item.split("->"))
+        .map((inthere) => inthere[index])
+    );
+    return [...temp];
+  };
+  useEffect(() => {
+    setAvailableFormats({
+      from: fromTo(0),
+      to: fromTo(1),
+    });
+  }, []);
+
   const handleFileChange = (e) => {
     setFile([]);
     setFile((prev) => [...prev, e.target.files[0]]);
     setDownloadUrl("");
   };
   const handleSubmit = async (e) => {
-    if (!file) {
+    if (!file || file.length === 0) {
       e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
       messageRef.current.style.color = "red";
       messageRef.current.textContent = "Please Choose file to move forward !";
+      return;
+    }
+    if ((file[0].size / 1024 / 1024).toFixed(2) > tempUser.maxSize) {
+      e.target.style.boxShadow = "0.1rem 0.1rem 2rem 0.5rem red inset";
+      messageRef.current.style.color = "red";
+      messageRef.current.textContent = `Max File Size : ${tempUser.maxSize}MB`;
       return;
     }
 
@@ -56,12 +79,15 @@ export default function Home({
       });
       const data = await response.json();
       if (!response.ok) {
+        messageRef.current.style.color = "red";
+        messageRef.current.textContent = `Upload failed : ${data.message}`;
         if (response.status === 421) {
           setLimitExceeded(true);
           setTempUser({
             used: data.lastDBValue.used,
             max: data.lastDBValue.max,
             maxSize: data.lastDBValue.maxSize,
+            formatAllowed: data.lastDBValue.formatAllowed,
           });
         }
         if (response.status === 406) {
@@ -69,6 +95,7 @@ export default function Home({
             used: data.lastDBValue.used,
             max: data.lastDBValue.max,
             maxSize: data.lastDBValue.maxSize,
+            formatAllowed: data.lastDBValue.formatAllowed,
           });
         }
         if (response.status === 401) {
@@ -76,8 +103,6 @@ export default function Home({
             navigate("/signin");
           }, 2000);
         }
-        messageRef.current.style.color = "red";
-        messageRef.current.textContent = `Upload failed : ${data.message}`;
         return;
       }
       try {
@@ -225,11 +250,14 @@ export default function Home({
                     onChange={(e) => setInputFormat(e.target.value)}
                     className="bg-secondary1 p-2 rounded-md"
                   >
-                    <option value="pdf">PDF</option>{" "}
-                    <option value="docx">DOCX</option>
-                    <option value="xlsx">XLSX</option>{" "}
-                    <option value="jpg">JPG</option>
-                    <option value="png">PNG</option>
+                    {avilableFormat.from.map((inthere, index) => (
+                      <option
+                        key={`from/${index}`}
+                        value={inthere.toLowerCase()}
+                      >
+                        {inthere.toUpperCase()}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="flex flex-nowrap items-center gap-2">
@@ -240,15 +268,17 @@ export default function Home({
                     To :{" "}
                   </label>
                   <select
+                    id="to"
+                    name="to"
                     value={outputFormat}
                     onChange={(e) => setOutputFormat(e.target.value)}
                     className="bg-secondary1 p-2 rounded-md"
                   >
-                    <option value="pdf">PDF</option>{" "}
-                    <option value="docx">DOCX</option>
-                    <option value="xlsx">XLSX</option>{" "}
-                    <option value="jpg">JPG</option>
-                    <option value="png">PNG</option>
+                    {avilableFormat.to.map((inthere, index) => (
+                      <option key={`to/${index}`} value={inthere.toLowerCase()}>
+                        {inthere.toUpperCase()}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </article>
@@ -268,7 +298,7 @@ export default function Home({
             ref={messageRef}
             className="text-secondary1 animate-pulse duration-200 font-bold"
           >
-            Up to 50MB
+            {/* {`Up to ${tempUser.maxSize} MB`} */}
           </p>
         </article>
       </article>

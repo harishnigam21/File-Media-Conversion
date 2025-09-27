@@ -12,7 +12,14 @@ function App() {
   const [fingerprint, setFingerprint] = useState(null);
   const [tempUser, setTempUser] = useState(() => {
     const saved = window.localStorage.getItem("tempUser");
-    return saved ? JSON.parse(saved) : { used: 0, max: 3, maxSize: 5 };
+    return saved
+      ? JSON.parse(saved)
+      : {
+          used: 0,
+          max: 3,
+          maxSize: 2,
+          formatAllowed: '["PDF -> DOCX","DOCX -> PDF","PDF -> XLSX","XLSX -> PDF"]', //don't want any conflict between this and data send from backend so made it string
+        };
   });
   const [limitExceeded, setLimitExceeded] = useState(() => {
     const saved = window.localStorage.getItem("tempUser");
