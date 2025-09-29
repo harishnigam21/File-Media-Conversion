@@ -1,36 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import siteInfo from "../assets/Site_Details/Primary/siteInfo";
 import { formatInTimeZone } from "date-fns-tz";
 import { addDays } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import { MdDelete } from "react-icons/md";
 import { ImCross } from "react-icons/im";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { FaHome } from "react-icons/fa";
 export default function Template1() {
-  const [taxRate, setTaxRate] = useState(18);
+  const location = useLocation();
+  const params = useParams();
+  const navigate = useNavigate();
+  const [taxRate, setTaxRate] = useState(0);
   const [validTill, setValidTill] = useState(30);
-  const [userInfo, setUserInfo] = useState({
-    name: "",
-    company_name: "",
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      pin: "",
-      mobile_no: [],
-    },
-    item_purchased: [
-      {
-        id: 1,
-        name: "lorem",
-        description:
-          "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Velit ad molestias illo error cum, officiis quidem deserunt saepe nulla et laudantium fugit quaerat fuga adipisci possimus ducimus deleniti sit maxime.",
-        quantity: 1,
-        price: 0,
-      },
-    ],
-    paid: 0,
-  });
-  const [showForm, setShowForm] = useState(true);
+  const [userInfo, setUserInfo] = useState(
+    location.state
+      ? location.state.user
+      : {
+          name: "",
+          company_name: "",
+          address: {
+            street: "",
+            city: "",
+            state: "",
+            pin: "",
+            mobile_no: [],
+          },
+          item_purchased: [
+            {
+              id: 1,
+              name: "lorem",
+              description:
+                "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Velit ad molestias illo error cum, officiis quidem deserunt saepe nulla et laudantium fugit quaerat fuga adipisci possimus ducimus deleniti sit maxime.",
+              quantity: 1,
+              price: 0,
+            },
+          ],
+          paid: 0,
+        }
+  );
+  const [showForm, setShowForm] = useState(location.state.user ? false : true);
   const itemTotal = () => {
     return userInfo.item_purchased.reduce((acc, curr) => {
       acc += curr.price * curr.quantity;
@@ -72,6 +81,11 @@ export default function Template1() {
       ],
     }));
   };
+  useEffect(() => {
+    if (location.state.user) {
+      setValidTill(location.state.user.expires);
+    }
+  }, []);
   return showForm ? (
     <section className="flex flex-col w-screen h-full p-4 gap-4">
       {/* bill to */}
@@ -135,6 +149,7 @@ export default function Template1() {
               Mobile No
             </label>
             <input
+              defaultValue={userInfo.address.mobile_no}
               type="tel"
               name="mobile"
               id="mobile"
@@ -448,7 +463,14 @@ export default function Template1() {
     </section>
   ) : (
     <section className="flex flex-col w-screen h-full p-4 overflow-x-scroll">
-      <article className="flex flex-col w-[720px] h-full gap-12 md:self-center">
+      <FaHome
+        className="text-3xl self-center hover:text-primary cursor-pointer"
+        onClick={() => navigate(`/${params.email}/home`)}
+      />
+      <article
+        id="invoice-section"
+        className="flex flex-col w-[720px] h-full gap-12 md:self-center"
+      >
         <article className="flex justify-between gap-8 flex-nowrap">
           <article className="flex flex-col gap-2">
             <h1 className="text-2xl grow">
@@ -481,7 +503,7 @@ export default function Template1() {
 
               <p className="text-right px-4">INVOICE #</p>
               <p className="border-[1px] text-center px-4 border-black">
-                {uuidv4()}
+                {location.state.user ? location.state.user.invoice : uuidv4()}
               </p>
 
               <p className="text-right px-4">CUSTOMER ID</p>
@@ -518,7 +540,7 @@ export default function Template1() {
         </article>
         <article className="flex justify-between w-full">
           <table className="w-full border-collapse border-2 border-black">
-            <thead>
+            <thead className="border-2 border-black">
               <tr className="text-center bg-blue-600">
                 <th>NAME</th>
                 <th>DESCRIPTION</th>
@@ -578,10 +600,20 @@ export default function Template1() {
           </article>
         </article>
       </article>
-      <ImCross
-        className="absolute top-2 right-10 text-red-500 text-2xl cursor-pointer"
-        onClick={() => setShowForm(true)}
-      />
+      {!location.state.user && (
+        <ImCross
+          className="absolute top-2 right-10 text-red-500 text-2xl cursor-pointer"
+          onClick={() => setShowForm(true)}
+        />
+      )}
+      <button
+        className="px-6 py-2 rounded-md bg-primary text-white self-center"
+        onClick={() => {
+          window.print();
+        }}
+      >
+        Download Invoice
+      </button>
     </section>
   );
 }

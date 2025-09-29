@@ -87,6 +87,32 @@ th {
 .animationDuration {
   animation-duration: 3s;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice-section,
+  #invoice-section * {
+    visibility: visible;
+  }
+
+  #invoice-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    overflow-x: unset !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
 @keyframes fromLeft {
   0% {
     opacity: 0;

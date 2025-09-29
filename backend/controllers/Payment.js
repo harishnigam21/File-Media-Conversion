@@ -42,10 +42,26 @@ const createOrder = async (req, res) => {
 };
 const getKey = async (req, res) => {
   try {
+    const cookies = req.cookies;
+    if (!cookies || !cookies.jwt) {
+      return res.status(404).json({ message: "Missing Important cookies" });
+    }
+    const validUser = await prisma.users.findUnique({
+      where: { reference_token: cookies.jwt },
+    });
+    if (!validUser) {
+      return res.status(401).json({ message: "You are not authorized user" });
+    }
     console.log("Successfully sended key");
     return res.status(200).json({
       message: "Successfully received key",
       key: process.env.RAZORPAY_KEY_ID,
+      user: {
+        email: validUser.email,
+        name:
+          validUser.first_name + validUser.middle_name + validUser.last_name,
+        contact: [validUser.mobile_no],
+      },
     });
   } catch (error) {
     console.log(error);

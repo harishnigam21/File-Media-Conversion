@@ -4,12 +4,32 @@ import Plans from "../assets/Site_Details/Secondary/plan";
 import { MdDelete } from "react-icons/md";
 import { FaArrowAltCircleLeft } from "react-icons/fa";
 import { ImCross } from "react-icons/im";
+import { IoMdAdd } from "react-icons/io";
 import siteInfo from "../assets/Site_Details/Primary/siteInfo";
 export default function Plan() {
   const navigate = useNavigate();
   const plans = Plans();
   const [choosePlan, setChoosePlan] = useState({});
   const [showCart, setShowCart] = useState(false);
+  const [Address, setAddress] = useState([
+    {
+      street: "64, Rajawat Building, new Dewas Road",
+      city: "Indore",
+      state: "Madhya Pradesh",
+      pin: "452003",
+    },
+    {
+      street: "89AB, RK Complex, near hanuman mandir",
+      city: "Munirka, New Delhi",
+      state: "Delhi",
+      pin: "110067",
+    },
+  ]);
+
+  const [selectedAddress, setSelectedAddress] = useState({
+    status: false,
+    address: null,
+  });
   const errorRef = useRef(null);
   const handlePurchase = async (e) => {
     e.currentTarget?.childNodes[1].classList.remove("hidden");
@@ -120,6 +140,42 @@ export default function Plan() {
             setChoosePlan({});
             setTimeout(() => {
               setShowCart(false);
+              navigate("templates/template1", {
+                state: {
+                  user: {
+                    name: KeyData.user.name,
+                    company_name: "",
+                    address: {
+                      ...selectedAddress.address,
+                      mobile_no: KeyData.user.contact,
+                    },
+                    item_purchased: [
+                      {
+                        id: 1,
+                        name: PlanDetailsData.plans.name,
+                        description: `${PlanDetailsData.plans.name} : ${PlanDetailsData.plans.description}`,
+                        quantity: 1,
+                        price: PlanDetailsData.plans.price,
+                      },
+                    ],
+                    paid: PlanDetailsData.plans.price,
+                    invoice: response.razorpay_payment_id.slice(4),
+                    expires: PlanDetailsData.plans.name
+                      .toLowerCase()
+                      .includes("month")
+                      ? 30
+                      : PlanDetailsData.plans.name
+                          .toLowerCase()
+                          .includes("year")
+                      ? 365
+                      : PlanDetailsData.plans.name
+                          .toLowerCase()
+                          .includes("unlimited")
+                      ? 365 * 10
+                      : 0,
+                  },
+                },
+              });
             }, 2000);
           } catch (error) {
             e.currentTarget?.childNodes[1].classList.add("hidden");
@@ -141,6 +197,11 @@ export default function Plan() {
         },
         notes: {
           address: "Razorpay Corporate Office",
+        },
+        prefill: {
+          name: KeyData.user.name, // Optional: Prefill user name
+          email: KeyData.user.email, // Optional: Prefill user email
+          contact: KeyData.user.contact[0], // **Mandatory for prefilling mobile number**
         },
         theme: {
           color: "#3399cc",
@@ -464,42 +525,204 @@ export default function Plan() {
 
       {/* type of add to cart */}
       {showCart && (
-        <article className="absolute top-0 right-0 z-10 w-[75%] md:w-1/3 lg:w-1/4 h-screen bg-gray-300 p-4 flex flex-col gap-4">
-          <h1>Overview :-</h1>
-          <article className="flex flex-col h-full">
-            <ImCross
-              className="absolute top-2 right-2 text-red-500 text-2xl cursor-pointer"
-              onClick={() => setShowCart(false)}
-            />
-            <p>Plan Name : {choosePlan.name}</p>
-            <p>
-              Max Conversion :{" "}
-              {choosePlan.maxConversions === 0
-                ? "unlimited"
-                : choosePlan.maxConversions}
-            </p>
-            <p>
-              Max File Size (MB) :{" "}
-              {choosePlan.maxFileSizeMB === 0
-                ? "unlimited"
-                : choosePlan.maxFileSizeMB}
-            </p>
-            <p>
-              Batch Limit :{" "}
-              {choosePlan.batchLimit === 0
-                ? "unlimited"
-                : choosePlan.batchLimit}
-            </p>
-            <div className="absolute bottom-0 self-center p-2">
-              <button
-                className="px-8 py-2 rounded-md bg-blue-600 text-white flex gap-2"
-                onClick={(e) => handlePurchase(e)}
-              >
-                <p>Buy Now</p>
-                <p className="hidden w-5 h-5 self-center aspect-square rounded-full border-4 border-l-violet-500 border-r-green-500 border-b-orange-600 border-t-red-500 animate-[spin_0.3s_linear_infinite]"></p>
-              </button>
-              <p className="text-red-500" ref={errorRef}></p>
-            </div>
+        <article className="absolute top-0 right-0 z-10 w-[75%] md:w-1/3 lg:w-1/4 h-screen bg-white p-4 flex flex-col gap-4 shadow-[0_0.1rem_0.8rem_0.1rem_black]">
+          {/* address details */}
+          <article className="flex flex-col gap-4">
+            <h1>Billing Address :-</h1>
+            {Address.length > 0 ? (
+              <article className="flex flex-col gap-4">
+                {Address.map((item, index) => (
+                  <article key={`address/${index}`} className="flex gap-4">
+                    <input
+                      type="radio"
+                      name="address"
+                      id={`address/${index}`}
+                      onChange={() =>
+                        setSelectedAddress(() => ({
+                          status: false,
+                          address: item,
+                        }))
+                      }
+                    />
+                    <label htmlFor={`address/${index}`}>
+                      {item.street +
+                        " ," +
+                        item.city +
+                        " ," +
+                        item.state +
+                        " ," +
+                        item.pin}
+                    </label>
+                  </article>
+                ))}
+              </article>
+            ) : (
+              <strong className="text-red text-center">No Address Found</strong>
+            )}
+            <span
+              className="flex gap-2 items-center text-blue-500 cursor-pointer"
+              onClick={() => {
+                if (document.querySelectorAll('input[type="radio"]')[0]) {
+                  document.querySelectorAll(
+                    'input[type="radio"]'
+                  )[0].checked = false;
+                }
+                setSelectedAddress(() => ({
+                  status: true,
+                  address: { street: null, city: null, state: null, pin: null },
+                }));
+              }}
+            >
+              <IoMdAdd />
+              Add new Address
+            </span>
+            {selectedAddress.status && (
+              <article className="flex flex-col">
+                <article className="whitespace-nowrap flex flex-col items-center w-full sm:w-3/4 self-center">
+                  <label
+                    defaultValue={selectedAddress.street}
+                    htmlFor="addressstreet"
+                    id="addressstreetLabel"
+                    className="bg-white ml-4 z-[2] w-fit self-start after:content-['*'] after:text-red-600 after:ml-1"
+                  >
+                    Street/Building No.
+                  </label>
+                  <input
+                    defaultValue={selectedAddress.address.street}
+                    type="text"
+                    name="addressstreet"
+                    id="addressstreet"
+                    className="border-[1px] border-black rounded-md p-2 -mt-3 w-full flex grow"
+                    aria-required
+                    onChange={(e) =>
+                      setSelectedAddress((props) => ({
+                        ...props,
+                        address: { ...props.address, street: e.target.value },
+                      }))
+                    }
+                  />
+                </article>
+                <article className="flex gap-2">
+                  <article className="whitespace-nowrap flex flex-col items-center w-full sm:w-3/4">
+                    <label
+                      htmlFor="addresscity"
+                      id="addresscityLabel"
+                      className="bg-white ml-4 z-[2] w-fit self-start after:content-['*'] after:text-red-600 after:ml-1"
+                    >
+                      City/District
+                    </label>
+                    <input
+                      defaultValue={selectedAddress.address.city}
+                      type="text"
+                      name="addresscity"
+                      id="addresscity"
+                      className="border-[1px] border-black rounded-md p-2 -mt-3 w-full"
+                      aria-required
+                      onChange={(e) =>
+                        setSelectedAddress((props) => ({
+                          ...props,
+                          address: { ...props.address, city: e.target.value },
+                        }))
+                      }
+                    />
+                  </article>
+                  <article className="whitespace-nowrap flex flex-col items-center w-full sm:w-3/4">
+                    <label
+                      htmlFor="addressstate"
+                      id="addressstateLabel"
+                      className="bg-white ml-4 z-[2] w-fit self-start after:content-['*'] after:text-red-600 after:ml-1"
+                    >
+                      State
+                    </label>
+                    <input
+                      defaultValue={selectedAddress.state}
+                      type="text"
+                      name="addressstate"
+                      id="addressstate"
+                      className="border-[1px] border-black rounded-md p-2 -mt-3 w-full"
+                      aria-required
+                      onChange={(e) =>
+                        setSelectedAddress((props) => ({
+                          ...props,
+                          address: { ...props.address, state: e.target.value },
+                        }))
+                      }
+                    />
+                  </article>
+                </article>
+                <article className="whitespace-nowrap flex flex-col items-center w-full sm:w-3/4 self-center">
+                  <label
+                    htmlFor="addresspin"
+                    id="addresspinLabel"
+                    className="bg-white ml-4 z-[2] w-fit self-start after:content-['*'] after:text-red-600 after:ml-1"
+                  >
+                    Pin
+                  </label>
+                  <input
+                    defaultValue={selectedAddress.pin}
+                    type="number"
+                    name="addresspin"
+                    id="addresspin"
+                    className="border-[1px] border-black rounded-md p-2 -mt-3 w-full"
+                    aria-required
+                    onChange={(e) =>
+                      setSelectedAddress((props) => ({
+                        ...props,
+                        address: { ...props.address, pin: e.target.value },
+                      }))
+                    }
+                  />
+                </article>
+              </article>
+            )}
+          </article>
+
+          {/* plan details */}
+          <article className="flex flex-col">
+            <h1>Plan Overview :-</h1>
+            <article className="flex flex-col h-full">
+              <ImCross
+                className="absolute top-2 right-2 text-red-500 text-2xl cursor-pointer"
+                onClick={() => setShowCart(false)}
+              />
+              <p>Plan Name : {choosePlan.name}</p>
+              <p>
+                Max Conversion :{" "}
+                {choosePlan.maxConversions === 0
+                  ? "unlimited"
+                  : choosePlan.maxConversions}
+              </p>
+              <p>
+                Max File Size (MB) :{" "}
+                {choosePlan.maxFileSizeMB === 0
+                  ? "unlimited"
+                  : choosePlan.maxFileSizeMB}
+              </p>
+              <p>
+                Batch Limit :{" "}
+                {choosePlan.batchLimit === 0
+                  ? "unlimited"
+                  : choosePlan.batchLimit}
+              </p>
+              <div className="absolute bottom-0 self-center p-2">
+                <button
+                  disabled={
+                    !(
+                      selectedAddress.address?.street &&
+                      selectedAddress.address?.city &&
+                      selectedAddress.address?.state &&
+                      selectedAddress.address?.pin
+                    )
+                  }
+                  className="px-8 py-2 rounded-md bg-blue-600 text-white flex gap-2"
+                  onClick={(e) => handlePurchase(e)}
+                >
+                  <p>Buy Now</p>
+                  <p className="hidden w-5 h-5 self-center aspect-square rounded-full border-4 border-l-violet-500 border-r-green-500 border-b-orange-600 border-t-red-500 animate-[spin_0.3s_linear_infinite]"></p>
+                </button>
+                <p className="text-red-500" ref={errorRef}></p>
+              </div>
+            </article>
           </article>
         </article>
       )}
