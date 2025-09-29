@@ -217,9 +217,9 @@ export default function Plan() {
     }
   };
   return !plans ? (
-    <h1 className="text-center text-red-500 text-3xl font-georgia">
-      Text it later
-    </h1>
+    <section className="w-screen h-screen flex justify-center items-center">
+      <p className="w-28 h-28 rounded-full border-8 border-l-violet-500 border-r-green-500 border-b-orange-600 border-t-red-500 animate-[spin_0.3s_linear_infinite]"></p>
+    </section>
   ) : (
     <section className="w-screen h-screen overflow-scroll noscrollbar p-2 xsm:p-8 flex flex-col gap-8">
       <p
