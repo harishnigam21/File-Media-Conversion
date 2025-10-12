@@ -8,7 +8,7 @@ import { ImCross } from "react-icons/im";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
 export default function Template1() {
-  const location = useLocation();
+  const location = useLocation(); 
   const params = useParams();
   const navigate = useNavigate();
   const [taxRate, setTaxRate] = useState(0);
